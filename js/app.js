@@ -3,6 +3,7 @@ var infoWindow;
 var meMarker;
 var pos = {};
 var markers = [];
+var onClickLatlng;
 var icons = {
   restroom: {
     icon: 'img/toilet.jpg'
@@ -12,6 +13,23 @@ var icons = {
   }
 }
 
+function getBathrooms() {
+  //This function exists as a placeholder for future database implementation.
+  //Once database is implemented, changing out this function is trivial.
+  var bathroomsDB = [
+    {title: 'Sure Shot Cafe', location: {lat: 47.66148, lng: -122.31346},
+     features:
+      {male: true, female: false, unisex: false, handycap: true,
+      changingStation: true, free: true, cost: 0, withPurchase: false,
+      publicRestRoom: true},
+     rating: 4, type: 'restroom', comments: ['Always clean, but sometimes busy.']},
+
+  ];
+  return bathroomsDB;
+};
+
+var bathrooms = getBathrooms();
+
 function initMap() {
 // Constructor creates a new map
   map = new google.maps.Map(document.getElementById('map'), {
@@ -20,54 +38,20 @@ function initMap() {
     mapTypeControl: false
   });
   infoWindow = new google.maps.InfoWindow();
-
-  //if you have geolocation fetch current position and refresh map
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      pos = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-      infoWindow.setPosition(pos);
-      map.setCenter(pos);
-
-      bathrooms = ko.observableArray([
-        {title: 'Sure Shot Cafe', location: {lat: 47.66148, lng: -122.31346},
-         features:
-          {male: true, female: false, unisex: false, handycap: true,
-          changingStation: true, free: true, cost: 0, withPurchase: false,
-          publicRestRoom: true},
-         rating: 4, type: 'restroom', comments: ['Always clean, but sometimes busy.']},
-         {title: "", location: pos,
-          features:
-           {male: false, female: false, unisex: false, handycap: false,
-            changingStation: false, free: false, cost: false, withPurchase: false,
-            publicRestRoom: false},
-          rating: false, type: 'meMarker', comments: ['You are here!']}
-      ]);
-
-      //error fetching location data
-    }, function() {
-      handleLocationError(true, infoWindow, map.getCenter());
+  google.maps.event.addListener(map, 'rightclick', function( event ){
+    onClickLatlng = {lat: event.latLng.lat(), lng: event.latLng.lng()};
+    var clickMarker = new google.maps.Marker({
+      position: onClickLatlng,
     });
-    //geolocation not supported by browser
-  } else {
-    handleLocationError(false, infoWindow, map.getCenter());
-  }
-
-  //function for handling geolocation error
-  function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-    infoWindow.setPosition(pos);
-    infoWindow.setContent(browserHasGeolocation ?
-                          'Error: The Geolocation service failed.' :
-                          'Error: Your browser doesn\'t support geolocation.');
-    infoWindow.open(map);
-  }
+    clickMarker.setMap(map);
+    console.log(onClickLatlng);
+  });
 }; //END OF initMap()
 
 //Function returns string of beautifully formatted bathroom features for infoWindow
 function getFeatures(marker) {
   var brFeatures = "";
+  brFeatures += "<input data-bind=\"click: addBathroom\" id=\"infoadd\" type=\"button\" value=\"Add Bathroom\">";
   if (marker.features['male']) {
     brFeatures += "Gender: Male";
   };
@@ -112,6 +96,16 @@ function populateInfoWindow(marker, infowindow) {
     var brFeatures = getFeatures(marker);
     infowindow.setContent('<div><h2>' + marker.title + '</h2>'+ brFeatures + '</div>');
     infowindow.open(map, marker);
+    isInfoWindowLoaded = false;
+    google.maps.event.addListener(infoWindow, 'domready', function () {
+      console.log($('#infoadd'));
+      ko.cleanNode($('#infoadd'));
+      if (!isInfoWindowLoaded) {
+          ko.applyBindings(self, $('#infoadd')[0]);
+          isInfoWindowLoaded = true;
+      }
+    });
+      
     // Make sure the marker property is cleared if the infowindow is closed.
     infowindow.addListener('closeclick', function() {
       infowindow.marker = null;
@@ -120,13 +114,12 @@ function populateInfoWindow(marker, infowindow) {
 }
 
 function showMarkers(bathroomsArray) {
-  for(place in bathrooms()) {
-    var position = bathrooms()[place].location;
-    var title = bathrooms()[place].title;
-    var features = bathrooms()[place].features;
-    var rating = bathrooms()[place].rating;
-    var comments = bathrooms()[place].comments;
-    console.log(comments);
+  for(place in bathrooms) {
+    var position = bathrooms[place].location;
+    var title = bathrooms[place].title;
+    var features = bathrooms[place].features;
+    var rating = bathrooms[place].rating;
+    var comments = bathrooms[place].comments;
     var marker = new google.maps.Marker({
       position: position,
       title: title,
@@ -135,7 +128,7 @@ function showMarkers(bathroomsArray) {
       animation: google.maps.Animation.DROP,
       id: place,
       comments: comments,
-      icon: icons[bathrooms()[place].type].icon
+      icon: icons[bathrooms[place].type].icon
     });
     markers.push(marker);
     marker.addListener('click', function() {
@@ -156,55 +149,33 @@ function showMarkers(bathroomsArray) {
 
 //this is the viewmodel
 var ViewModel = function() {
-  this.showListings = function() {
-    showMarkers(bathrooms());
-    // for(place in bathrooms()) {
-    //   var position = bathrooms()[place].location;
-    //   var title = bathrooms()[place].title;
-    //   var features = bathrooms()[place].features;
-    //   var rating = bathrooms()[place].rating;
-    //   var comments = bathrooms()[place].comments;
-    //   console.log(comments);
-    //   var marker = new google.maps.Marker({
-    //     position: position,
-    //     title: title,
-    //     features: features,
-    //     rating: rating,
-    //     animation: google.maps.Animation.DROP,
-    //     id: place,
-    //     comments: comments,
-    //     icon: icons[bathrooms()[place].type].icon
-    //   });
-    //   markers.push(marker);
-    //   marker.addListener('click', function() {
-    //     populateInfoWindow(this, infoWindow);
-    //   });
-    // };
+  self = this;
 
-    // var bounds = new google.maps.LatLngBounds();
-    // // Extend the boundaries of the map for each marker and display the marker
-    // for (marker in markers) {
-    //   markers[marker].setMap(map);
-    //   //bounds.extend(markers[marker].position);
-    // };
-    //map.fitBounds(bounds);
+  self.showListings = function() {
+    showMarkers(bathrooms);
   };
 
-  this.hideListings = function() {
+  self.hideListings = function() {
     for (marker in markers) {
       markers[marker].setMap(null);
     };
   };
-
-  this.addBathroom = function() {
-    bathrooms().push({title: 'Bacon Cafe', location: {lat: 47.66200, lng: -122.31346},
+  
+  self.newTitle = ko.observable("horse");
+  self.addBathroom = function() {
+    console.log(self.newTitle());
+    bathrooms.push({title: self.newTitle(), location: {lat: 47.66200, lng: -122.31346},
      features:
       {male: true, female: false, unisex: false, handycap: true,
       changingStation: true, free: true, cost: 0, withPurchase: false,
       publicRestRoom: true},
      rating: 4, type: 'restroom', comments: ['Always clean, but sometimes busy.']});
-     showMarkers(bathrooms());
+     showMarkers(bathrooms);
   };
+
+  this.addMarker = function() {
+
+  }
 };
 
 ko.applyBindings(new ViewModel());

@@ -25,6 +25,9 @@
     </style>
 </head>
 <body>
+  <div id="for-infowindow">
+    <input data-bind="click: addBathroom" id="add-bathroom" type="button" value="Add Bathroom">
+  </div>
   <main>
     <aside class="container">
     <div class="options-box">
@@ -36,6 +39,7 @@
   </aside>
     <div id="map"></div>
   </main>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script async defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpAq4OVsoOqzt_9igfES5XiJX6moInlso&v=3&callback=initMap">
     </script>
