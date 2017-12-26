@@ -25,9 +25,6 @@
     </style>
 </head>
 <body>
-  <div id="for-infowindow">
-    <input data-bind="click: addBathroom" id="add-bathroom" type="button" value="Add Bathroom">
-  </div>
   <main>
     <aside class="container">
     <div class="options-box">
@@ -37,7 +34,7 @@
     </div>
     <img src='img/me.png' alt='You are here!'>
   </aside>
-    <div id="map"></div>
+    <div data-bind="event: {mouseover: mapBind}, mouseout: disable" id="map"></div>
   </main>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script async defer

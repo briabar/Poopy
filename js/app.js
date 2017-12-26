@@ -1,4 +1,5 @@
 var map;
+var outMap;
 var infoWindow;
 var meMarker;
 var pos = {};
@@ -12,6 +13,16 @@ var icons = {
     icon: 'img/me.png'
   }
 }
+
+function initMap() {
+// Constructor creates a new map
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: {lat: 47.6272037, lng: -122.3410009},
+    zoom: 13,
+    mapTypeControl: false
+  });
+  infoWindow = new google.maps.InfoWindow();
+}; //END OF initMap()
 
 function getBathrooms() {
   //This function exists as a placeholder for future database implementation.
@@ -30,28 +41,9 @@ function getBathrooms() {
 
 var bathrooms = getBathrooms();
 
-function initMap() {
-// Constructor creates a new map
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: {lat: 47.6272037, lng: -122.3410009},
-    zoom: 13,
-    mapTypeControl: false
-  });
-  infoWindow = new google.maps.InfoWindow();
-  google.maps.event.addListener(map, 'rightclick', function( event ){
-    onClickLatlng = {lat: event.latLng.lat(), lng: event.latLng.lng()};
-    var clickMarker = new google.maps.Marker({
-      position: onClickLatlng,
-    });
-    clickMarker.setMap(map);
-    console.log(onClickLatlng);
-  });
-}; //END OF initMap()
-
 //Function returns string of beautifully formatted bathroom features for infoWindow
 function getFeatures(marker) {
   var brFeatures = "";
-  brFeatures += "<input data-bind=\"click: addBathroom\" id=\"infoadd\" type=\"button\" value=\"Add Bathroom\">";
   if (marker.features['male']) {
     brFeatures += "Gender: Male";
   };
@@ -96,16 +88,6 @@ function populateInfoWindow(marker, infowindow) {
     var brFeatures = getFeatures(marker);
     infowindow.setContent('<div><h2>' + marker.title + '</h2>'+ brFeatures + '</div>');
     infowindow.open(map, marker);
-    isInfoWindowLoaded = false;
-    google.maps.event.addListener(infoWindow, 'domready', function () {
-      console.log($('#infoadd'));
-      ko.cleanNode($('#infoadd'));
-      if (!isInfoWindowLoaded) {
-          ko.applyBindings(self, $('#infoadd')[0]);
-          isInfoWindowLoaded = true;
-      }
-    });
-      
     // Make sure the marker property is cleared if the infowindow is closed.
     infowindow.addListener('closeclick', function() {
       infowindow.marker = null;
@@ -150,6 +132,39 @@ function showMarkers(bathroomsArray) {
 //this is the viewmodel
 var ViewModel = function() {
   self = this;
+
+  self.mapBind = function() {
+    var clickMarker = new google.maps.Marker();
+    bla = false;
+    var listenerArray = [];
+    //if (listener){
+    google.maps.event.clearInstanceListeners(map);
+    //}
+    var listener = map.addListener('rightclick', function( event ){
+      clickMarker.setMap(null);
+      clickMarker = null;
+      var onClickLatlng = {lat: event.latLng.lat(), lng: event.latLng.lng()};
+      clickMarker = new google.maps.Marker({
+        position: onClickLatlng,
+      });
+      clickMarker.setMap(map);
+      infoWindow.close();
+      infoWindow.setContent("<input data-bind=\"click: addBathroom\" id=\"infoadd\" type=\"button\" value=\"Add Bathroom\">")
+      infoWindow.open(map, clickMarker);
+      isInfoWindowLoaded = false;
+      google.maps.event.addListener(infoWindow, 'domready', function () {
+        ko.cleanNode($('#infoadd'));
+        if (!isInfoWindowLoaded) {
+          ko.applyBindings(self, $('#infoadd')[0]);
+          isInfoWindowLoaded = true;
+        }
+      });
+      console.log("HI BRIAN!");
+    }, false);
+  };
+  // console.log(map);
+ 
+
 
   self.showListings = function() {
     showMarkers(bathrooms);
