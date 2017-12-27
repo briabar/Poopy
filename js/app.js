@@ -4,6 +4,8 @@ var infoWindow;
 var meMarker;
 var pos = {};
 var markers = [];
+var clickMarker;
+var clickMarkerPosition;
 var onClickLatlng;
 var icons = {
   restroom: {
@@ -39,7 +41,9 @@ function getBathrooms() {
   return bathroomsDB;
 };
 
+
 var bathrooms = getBathrooms();
+
 
 //Function returns string of beautifully formatted bathroom features for infoWindow
 function getFeatures(marker) {
@@ -82,6 +86,7 @@ function getFeatures(marker) {
   return brFeatures;
 }
 
+
 function populateInfoWindow(marker, infowindow) {
   if (infowindow.marker != marker) {
     infowindow.marker = marker;
@@ -94,6 +99,7 @@ function populateInfoWindow(marker, infowindow) {
     });
   }
 }
+
 
 function showMarkers(bathroomsArray) {
   for(place in bathrooms) {
@@ -126,40 +132,94 @@ function showMarkers(bathroomsArray) {
 }
 
 
-
-
-
 //this is the viewmodel
 var ViewModel = function() {
+  var arrayToClear = [];
   self = this;
 
   self.mapBind = function() {
-    var clickMarker = new google.maps.Marker();
-    bla = false;
-    var listenerArray = [];
-    //if (listener){
+    clickMarker = new google.maps.Marker();
+    //keep event handlers from piling up
     google.maps.event.clearInstanceListeners(map);
-    //}
-    var listener = map.addListener('rightclick', function( event ){
+    map.addListener('click', function() {
+      infoWindow.close();
+      console.log("butts");
+      //clean up markers
+      for (item in arrayToClear) {
+       arrayToClear[item].setMap(null);
+      };
       clickMarker.setMap(null);
-      clickMarker = null;
+    });
+    var listener = map.addListener('rightclick', function( event ){
+      //clean up markers
+      for (item in arrayToClear) {
+        arrayToClear[item].setMap(null);
+      };
+      clickMarker.setMap(null);
       var onClickLatlng = {lat: event.latLng.lat(), lng: event.latLng.lng()};
       clickMarker = new google.maps.Marker({
         position: onClickLatlng,
+        icon: 'img/toilet.jpg'
       });
       clickMarker.setMap(map);
+      arrayToClear.push(clickMarker);
       infoWindow.close();
-      infoWindow.setContent("<input data-bind=\"click: addBathroom\" id=\"infoadd\" type=\"button\" value=\"Add Bathroom\">")
+      infoWindow.setContent("<input data-bind=\"value: newName\" id=\"nameadd\" placeholder=\"venue name\"><div>"
+      + "  Male: <input type=\"radio\" data-bind=\"checked: newMale\" id=\"maleadd\" name=\"gender\">"
+      + "  Female: <input type=\"radio\" data-bind=\"checked: newFemale\" id=\"femaleadd\" name=\"gender\">"
+      + "  Unisex: <input type=\"radio\" data-bind=\"checked: newUnisex\" id=\"unisexadd\" name=\"gender\"><br>"
+      + "  Handycap: <input type=\"checkbox\" data-bind=\"checked: newHandycap\" id=\"handycapadd\">"
+      + " Changing Station:<input type=\"checkbox\" data-bind=\"checked: newChangingStation\" id=\"changingstationadd\"><br>"
+      + " Free to use: <input type=\"checkbox\" data-bind=\"checked: newFree\" id=\"freeadd\"><br>"
+      + "<input data-bind=\"value: newCost, visible: !newFree()\" placeholder=\"Price to use.\" id=\"costadd\"></div><br>"
+      + "  1: <input type=\"radio\" value=\"1\" data-bind=\"checked: newRating\" id=\"1add\" name=\"rating\">"
+      + "  2: <input type=\"radio\" value=\"2\" data-bind=\"checked: newRating\" id=\"2add\" name=\"rating\">"
+      + "  3: <input type=\"radio\" value=\"3\" data-bind=\"checked: newRating\" id=\"3add\" name=\"rating\">"
+      + "  4: <input type=\"radio\" value=\"4\" data-bind=\"checked: newRating\" id=\"4add\" name=\"rating\">"
+      + "  3: <input type=\"radio\" value=\"5\" data-bind=\"checked: newRating\" id=\"5add\" name=\"rating\"><br>"
+      + "<input data-bind=\"value: newComment\" placeholder=\"Write a comment.\" id=\"comment\">"
+      + "<input data-bind=\"click: addBathroom\" id=\"infoadd\" type=\"button\" value=\"Add Bathroom\">");
+      clickMarkerPosition = clickMarker.position;
       infoWindow.open(map, clickMarker);
       isInfoWindowLoaded = false;
+      //remove and reapply bindings to infoWindow
       google.maps.event.addListener(infoWindow, 'domready', function () {
+        $(".gm-style-iw").next("div").hide();
+        ko.cleanNode($('#nameadd'));
+        ko.cleanNode($('#maleadd'));
+        ko.cleanNode($('#femaleadd'));
+        ko.cleanNode($('#unisexadd'));
+        ko.cleanNode($('#handycapadd'));
+        ko.cleanNode($('#changingstationadd'));
+        ko.cleanNode($('#freeadd'));
+        ko.cleanNode($('#showcost'));
+        ko.cleanNode($('#costadd'));
+        ko.cleanNode($('#1add'));
+        ko.cleanNode($('#2add'));
+        ko.cleanNode($('#3add'));
+        ko.cleanNode($('#4add'));
+        ko.cleanNode($('#5add'));
+        ko.cleanNode($('#comment'));
         ko.cleanNode($('#infoadd'));
         if (!isInfoWindowLoaded) {
+          ko.applyBindings(self, $('#nameadd')[0]);
+          ko.applyBindings(self, $('#maleadd')[0]);
+          ko.applyBindings(self, $('#femaleadd')[0]);
+          ko.applyBindings(self, $('#unisexadd')[0]);
+          ko.applyBindings(self, $('#handycapadd')[0]);
+          ko.applyBindings(self, $('#changingstationadd')[0]);
+          ko.applyBindings(self, $('#freeadd')[0]);
+          ko.applyBindings(self, $('#costadd')[0]);
+          ko.applyBindings(self, $('#1add')[0]);
+          ko.applyBindings(self, $('#2add')[0]);
+          ko.applyBindings(self, $('#3add')[0]);
+          ko.applyBindings(self, $('#4add')[0]);
+          ko.applyBindings(self, $('#5add')[0]);
+          ko.applyBindings(self, $('#comment')[0]);            
           ko.applyBindings(self, $('#infoadd')[0]);
           isInfoWindowLoaded = true;
         }
       });
-      console.log("HI BRIAN!");
     }, false);
   };
   // console.log(map);
@@ -176,16 +236,41 @@ var ViewModel = function() {
     };
   };
   
-  self.newTitle = ko.observable("horse");
+  self.newName = ko.observable();
+  self.newMale = ko.observable();
+  self.newFemale = ko.observable();
+  self.newUnisex = ko.observable();
+  self.newHandycap = ko.observable();
+  self.newChangingStation = ko.observable();
+  self.newFree = ko.observable();
+  self.newCost = ko.observable();
+  self.newWithPurchase = ko.observable();
+  self.newPublic = ko.observable();
+  self.newRating = ko.observable();
+  self.newComment = ko.observable();
   self.addBathroom = function() {
-    console.log(self.newTitle());
-    bathrooms.push({title: self.newTitle(), location: {lat: 47.66200, lng: -122.31346},
+    console.log("clickMarker");
+    console.log(clickMarker);
+    bathrooms.push({title: self.newName(), location: clickMarkerPosition,
      features:
-      {male: true, female: false, unisex: false, handycap: true,
-      changingStation: true, free: true, cost: 0, withPurchase: false,
-      publicRestRoom: true},
-     rating: 4, type: 'restroom', comments: ['Always clean, but sometimes busy.']});
+      {male: self.newMale(), female: self.newFemale(), unisex: self.newUnisex(), handycap: self.newHandycap(),
+      changingStation: self.newChangingStation(), free: self.newFree(), cost: self.newCost(), withPurchase: self.newWithPurchase(),
+      publicRestRoom: self.newPublic()},
+     rating: self.newRating(), type: 'restroom', comments: [self.newComment()]});
+     infoWindow.close()
      showMarkers(bathrooms);
+     self.newName = ko.observable();
+     self.newMale = ko.observable();
+     self.newFemale = ko.observable();
+     self.newUnisex = ko.observable();
+     self.newHandycap = ko.observable();
+     self.newChangingStation = ko.observable();
+     self.newFree = ko.observable();
+     self.newCost = ko.observable();
+     self.newWithPurchase = ko.observable();
+     self.newPublic = ko.observable();
+     self.newRating = ko.observable();
+     self.newComment = ko.observable();
   };
 
   this.addMarker = function() {
