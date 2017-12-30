@@ -28,9 +28,16 @@
   <main>
     <aside class="container">
     <div class="options-box">
-      <input data-bind="click: showListings" id="show-listings" type="button" value="Show Listings">
       <input data-bind="click: hideListings" id="hide-listings" type="button" value="Hide Listings">
       <input data-bind="click: addBathroom" id="add-bathroom" type="button" value="Add Bathroom">
+      Male<input type="checkbox" data-bind=" checked: filterMale, click: changeFilter">
+      Female<input type="checkbox" data-bind="checked: filterFemale, click: changeFilter">
+      Unisex<input type="checkbox" data-bind="checked: filterUnisex, click: changeFilter">
+      Free<input type="checkbox" data-bind="checked: filterFree, click: changeFilter">
+      CS<input type="checkbox" data-bind="checked: filterChangingStation, click: changeFilter">
+      HC<input type="checkbox" data-bind="checked: filterHandycap, click: changeFilter">
+      Public Restroom<input type="checkbox" data-bind="checked: filterPublicRestRoom, click: changeFilter">
+      Show All<input type="checkbox" data-bind="checked: filterShowAll, click: changeFilter">
     </div>
     <img src='img/me.png' alt='You are here!'>
   </aside>

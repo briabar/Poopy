@@ -122,60 +122,40 @@ function showMarkers(bathroomsArray, filterFeatures) {
     var title = bathrooms[place].title;
     var features = bathrooms[place].features;
     var rating = bathrooms[place].rating;
+    console.log(features);
     var comments = bathrooms[place].comments;
-    var marker = new google.maps.Marker({
-      position: position,
-      title: title,
-      features: features,
-      rating: rating,
-      animation: google.maps.Animation.DROP,
-      id: place,
-      comments: comments,
-      icon: icons[bathrooms[place].type].icon
-    });
-    markers.push(marker);
-    marker.addListener('click', function() {
-     clickMarker.setMap(null);
-     populateInfoWindow(this, infoWindow);
-   });
-   var bounds = new google.maps.LatLngBounds();
-  // Extend the boundaries of the map for each marker and display the marker
-    for (marker in markers) {
-      //if (true filterFeatures)
-      var filterShowBool = false;
-      if (((markers[marker].features.male && filterFeatures.male) === true) ||
-         ((markers[marker].features.female && filterFeatures.female) === true) ||
-         ((markers[marker].features.unisex && filterFeatures.unisex) === true)) {
-        //markers[marker].setMap(map);
-        filterShowBool = true;
-
-      }
-      if ((markers[marker].features.changingStation) && (filterFeatures.changingStation) ||
-          (markers[marker].features.free) && (filterFeatures.free) ||
-          (markers[marker].features.handycap) && (filterFeatures.handycap) ||
-          (markers[marker].features.publicRestRoom) && (filterFeatures.publicRestRoom)) {
-        filterShowBool = true;
-      }
-      if (!(markers[marker].features.changingStation) && (filterFeatures.changingStation) ||
-          !(markers[marker].features.free) && (filterFeatures.free) ||
-          !(markers[marker].features.handycap) && (filterFeatures.handycap) ||
-          !(markers[marker].features.publicRestRoom) && (filterFeatures.publicRestRoom)) {
-        filterShowBool = false;
-      }
-      if (filterFeatures.showAll) {
-        filterShowBool = true;
-      }
-      if (filterShowBool) {
+   // if (filterRating === rating)
+   console.log("1");
+   console.log(features);
+   console.log(filterFeatures);
+   if ((features.changingStation && filterFeatures.changingStation) === true || 
+       (features.female && filterFeatures.female) === true || (features.free && filterFeatures.free) === true || 
+       (features.handycap && filterFeatures.handycap) === true || (features.male && filterFeatures.male) === true || 
+       (features.publicRestRoom && filterFeatures.publicRestRoom) === true || 
+       (features.unisex && filterFeatures.unisex) === true) {
+        console.log("MATCH!");
+        var marker = new google.maps.Marker({
+          position: position,
+          title: title,
+          features: features,
+          rating: rating,
+          animation: google.maps.Animation.DROP,
+          id: place,
+          comments: comments,
+          icon: icons[bathrooms[place].type].icon
+        });
+        markers.push(marker);
+        marker.addListener('click', function() {
+          clickMarker.setMap(null);
+          populateInfoWindow(this, infoWindow);
+        });
+      var bounds = new google.maps.LatLngBounds();
+      // Extend the boundaries of the map for each marker and display the marker
+      for (marker in markers) {
         markers[marker].setMap(map);
-      }
-
-          // (markers[marker].features.female && filterFeatures.female) === true || (markers[marker].features.free && filterFeatures.free) === true ||
-          // (markers[marker].features.handycap && filterFeatures.handycap) === true || (markers[marker].features.male && filterFeatures.male) === true ||
-          // (markers[marker].features.publicRestRoom && filterFeatures.publicRestRoom) === true ||
-          // (markers[marker].features.unisex && filterFeatures.unisex) === true) {
-
-      //bounds.extend(markers[marker].position);
-    };
+        //bounds.extend(markers[marker].position);
+      };
+    }
   };
 }
 
@@ -262,7 +242,7 @@ var ViewModel = function() {
           ko.applyBindings(self, $('#3add')[0]);
           ko.applyBindings(self, $('#4add')[0]);
           ko.applyBindings(self, $('#5add')[0]);
-          ko.applyBindings(self, $('#comment')[0]);
+          ko.applyBindings(self, $('#comment')[0]);            
           ko.applyBindings(self, $('#infoadd')[0]);
           isInfoWindowLoaded = true;
         }
@@ -270,7 +250,7 @@ var ViewModel = function() {
     }, false);
   };
   // console.log(map);
-
+ 
 
   //filter markers.
   self.filterChangingStation = ko.observable();
@@ -280,7 +260,6 @@ var ViewModel = function() {
   self.filterMale = ko.observable();
   self.filterPublicRestRoom = ko.observable();
   self.filterUnisex = ko.observable();
-  self.filterShowAll = ko.observable(true);
   self.changeFilter = function() {
     filterFeatures = {
       changingStation: self.filterChangingStation(),
@@ -289,9 +268,9 @@ var ViewModel = function() {
       handycap: self.filterHandycap(),
       male: self.filterMale(),
       publicRestRoom: self.filterPublicRestRoom(),
-      unisex: self.filterUnisex(),
-      showAll: self.filterShowAll()
+      unisex: self.filterUnisex()
     };
+    console.log("ASFASF")
     showMarkers(bathrooms, filterFeatures);
     return true;
   };
@@ -302,28 +281,25 @@ var ViewModel = function() {
       markers[marker].setMap(null);
     };
   };
-
-  //This is for adding a new bathroom to our array
-  function initBathroomObservables() {
-    self.newName = ko.observable();
-    self.newMale = ko.observable();
-    self.newFemale = ko.observable();
-    self.newUnisex = ko.observable();
-    self.newHandycap = ko.observable();
-    self.newChangingStation = ko.observable();
-    self.newFree = ko.observable();
-    self.newCost = ko.observable();
-    self.newWithPurchase = ko.observable();
-    self.newPublic = ko.observable();
-    self.newRating = ko.observable();
-    self.newComment = ko.observable();
-  }
-  initBathroomObservables();
+  
+  self.newName = ko.observable();
+  self.newMale = ko.observable();
+  self.newFemale = ko.observable();
+  self.newUnisex = ko.observable();
+  self.newHandycap = ko.observable();
+  self.newChangingStation = ko.observable();
+  self.newFree = ko.observable();
+  self.newCost = ko.observable();
+  self.newWithPurchase = ko.observable();
+  self.newPublic = ko.observable();
+  self.newRating = ko.observable();
+  self.newComment = ko.observable();
   self.addBathroom = function() {
-    //batrooms need at least a name and gender
+    console.log("clickMarker");
+    console.log(clickMarker);
     if (!self.newName()) {
       alert("Please add bathroom details before submitting.");
-    }
+    } 
     else if (!self.newMale() && !self.newFemale() && !self.newUnisex()) {
       alert("Please add bathroom details before submitting.");
     }
@@ -337,7 +313,18 @@ var ViewModel = function() {
         infoWindow.close()
         showMarkers(bathrooms, filterFeatures);
     }
-     initBathroomObservables(); //reset observables
+     self.newName = ko.observable();
+     self.newMale = ko.observable();
+     self.newFemale = ko.observable();
+     self.newUnisex = ko.observable();
+     self.newHandycap = ko.observable();
+     self.newChangingStation = ko.observable();
+     self.newFree = ko.observable();
+     self.newCost = ko.observable();
+     self.newWithPurchase = ko.observable();
+     self.newPublic = ko.observable();
+     self.newRating = ko.observable();
+     self.newComment = ko.observable();
   };
 
   this.addMarker = function() {
