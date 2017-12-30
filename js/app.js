@@ -111,12 +111,14 @@ function populateInfoWindow(marker, infowindow) {
   }
 }
 
-
 function showMarkers(bathroomsArray, filterFeatures) {
+  console.log(markers.length)
   for (marker in markers) {
     markers[marker].setMap(null);
     //bounds.extend(markers[marker].position);
   };
+  console.log(bathroomsArray);
+  markers = []
   for(place in bathrooms) {
     var position = bathrooms[place].location;
     var title = bathrooms[place].title;
@@ -140,43 +142,35 @@ function showMarkers(bathroomsArray, filterFeatures) {
    });
    var bounds = new google.maps.LatLngBounds();
   // Extend the boundaries of the map for each marker and display the marker
-    for (marker in markers) {
-      //if (true filterFeatures)
-      var filterShowBool = false;
-      if (((markers[marker].features.male && filterFeatures.male) === true) ||
-         ((markers[marker].features.female && filterFeatures.female) === true) ||
-         ((markers[marker].features.unisex && filterFeatures.unisex) === true)) {
-        //markers[marker].setMap(map);
-        filterShowBool = true;
-
-      }
-      if ((markers[marker].features.changingStation) && (filterFeatures.changingStation) ||
-          (markers[marker].features.free) && (filterFeatures.free) ||
-          (markers[marker].features.handycap) && (filterFeatures.handycap) ||
-          (markers[marker].features.publicRestRoom) && (filterFeatures.publicRestRoom)) {
-        filterShowBool = true;
-      }
-      if (!(markers[marker].features.changingStation) && (filterFeatures.changingStation) ||
-          !(markers[marker].features.free) && (filterFeatures.free) ||
-          !(markers[marker].features.handycap) && (filterFeatures.handycap) ||
-          !(markers[marker].features.publicRestRoom) && (filterFeatures.publicRestRoom)) {
-        filterShowBool = false;
-      }
-      if (filterFeatures.showAll) {
-        filterShowBool = true;
-      }
-      if (filterShowBool) {
-        markers[marker].setMap(map);
-      }
-
-          // (markers[marker].features.female && filterFeatures.female) === true || (markers[marker].features.free && filterFeatures.free) === true ||
-          // (markers[marker].features.handycap && filterFeatures.handycap) === true || (markers[marker].features.male && filterFeatures.male) === true ||
-          // (markers[marker].features.publicRestRoom && filterFeatures.publicRestRoom) === true ||
-          // (markers[marker].features.unisex && filterFeatures.unisex) === true) {
-
-      //bounds.extend(markers[marker].position);
-    };
   };
+
+  for (marker in markers) {
+    var filterShowBool = false;
+    //console.log(markers[marker]);
+    if ((filterFeatures["male"] && markers[marker]["features"]["male"]) ||
+        (filterFeatures["female"] && markers[marker]["features"]["female"]) ||
+        (filterFeatures["unisex"] && markers[marker]["features"]["unisex"])) {
+      filterShowBool = true;
+      console.log("male")
+    }
+    for (feature in markers[marker]["features"]){
+      if (filterFeatures[feature] && feature !== "male" && feature !== "female" && feature !== "unisex") {
+        if (filterFeatures[feature] && markers[marker]["features"][feature]){
+          filterShowBool = true;
+        }
+         else {
+           filterShowBool = false;
+           break;
+         }
+       }
+    }
+    if (filterFeatures.showAll) {
+      filterShowBool = true;
+    }
+    if (filterShowBool) {
+      markers[marker].setMap(map);
+    }
+  }
 }
 
 
