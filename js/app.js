@@ -279,7 +279,6 @@ function populateInfoWindow(marker, infowindow) {
         longitude: yelpLng,
       }
     }).done(function(data) {
-        console.log(data);
         var yelpRating = data['businesses'][0]['rating'];
         //make pretty stars
         if (yelpRating !== undefined) {
@@ -343,7 +342,6 @@ function showMarkers(bathroomsArray) {
       comments: comments,
       icon: icon,
     });
-    console.log(icon);
     globalVariables.markers.push(marker);
     //set up marker's to open infowindow on click
     marker.addListener('click', function() {
@@ -425,7 +423,6 @@ var ViewModel = function() {
       };
       globalVariables.clickMarker.setMap(null);
       var onClickLatlng = {lat: event.latLng.lat(), lng: event.latLng.lng()};
-      console.log(onClickLatlng);
       globalVariables.clickMarker = new google.maps.Marker({
         position: onClickLatlng,
         icon: 'img/toilet.png'
