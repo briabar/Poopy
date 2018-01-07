@@ -1,51 +1,55 @@
-var map;
-var outMap;
-var infoWindow;
-var meMarker;
-var pos = {};
-var markers = [];
-var clickMarker;
-var clickMarkerPosition;
-var filterFeatures = {
-  changingStation: false,
-  female: true,
-  free: false,
-  handycap: false,
-  male: true,
-  publicRestRoom: false,
-  unisex: true
-};
-var onClickLatlng;
-var icons = {
-  restroom: {
-    icon: 'img/toilet.jpg'
+var globalVariables = { //this object holds all our globals to help keep our footprint down.
+  map: '',
+  infoWindow: '',
+  markers: [],
+  clickMarker: '',
+  clickMarkerPosition: '',
+  filterFeatures: {
+    changingStation: false,
+    female: true,
+    free: false,
+    handycap: false,
+    male: true,
+    publicRestRoom: false,
+    unisex: true
   },
-  meMarker: {
-    icon: 'img/me.png'
-  }
+  icons: {
+    male: {
+      icon: 'img/male.png'
+    },
+    female: {
+      icon: 'img/female.png'
+    },
+    unisex: {
+      icon: 'img/unisex.png'
+    },
+  },
+  bathrooms: {},
 };
 
 
 function initMap() {
 // Constructor creates a new map
-  map = new google.maps.Map(document.getElementById('map'), {
+  globalVariables.map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 47.65748242274938, lng: -122.31318303660373},
     zoom: 20,
     mapTypeControl: false
   });
-  infoWindow = new google.maps.InfoWindow({
-    position: map.getCenter(),
+  globalVariables.infoWindow = new google.maps.InfoWindow({
+    position: globalVariables.map.getCenter(),
   });
-  showMarkers(bathrooms, filterFeatures);
-  infoWindow.setContent("Right click on a location to create new bathrooms, "
+  showMarkers(globalVariables.bathrooms, globalVariables.filterFeatures);
+  globalVariables.infoWindow.setContent("Right click on a location to create new bathrooms, "
                       + "or hover over the filter tab on the left.")
-  infoWindow.open(map);
+  globalVariables.infoWindow.open(globalVariables.map);
 }; //END OF initMap()
 
 
+//This function exists as a placeholder for future database implementation.
+//Once database is implemented, changing out this function is trivial.
+//Function returns an object containing bathroom information for creating
+//markers.
 function getBathrooms() {
-  //This function exists as a placeholder for future database implementation.
-  //Once database is implemented, changing out this function is trivial.
   var bathroomsDB = [
     {"title": "Sureshot Espresso",
      "location": {"lat": 47.661416829669996,"lng":-122.31337934732437},
@@ -59,10 +63,10 @@ function getBathrooms() {
         "free": true,
         "cost": 0,
         "withPurchase": false,
-        "publicRestRoom": true
+        "publicRestRoom": false
       },
       "rating": "4",
-      "type": "restroom",
+      "type": "male",
       "comments": ["Always clean, but sometimes busy."]
     },
     {
@@ -77,11 +81,11 @@ function getBathrooms() {
         "changingStation": false,
         "free": true,
         "cost": 0,
-        "withPurchase": true,
-        "publicRestRoom": true
+        "withPurchase": false,
+        "publicRestRoom": false
       },
       "rating": "3",
-      "type": "restroom",
+      "type": "male",
       "comments": ["Bathrooms are relatively clean despite the traffic to this popular coffee house."]
     },
     {
@@ -96,17 +100,112 @@ function getBathrooms() {
         "changingStation": false,
         "free": true,
         "cost": 0,
-        "withPurchase": true,
-        "publicRestRoom": true
+        "withPurchase": false,
+        "publicRestRoom": false
       },
       "rating": "3",
-      "type": "restroom",
+      "type": "female",
       "comments": ["Bathrooms are relatively clean despite the traffic to this popular coffee house."]
-    }
+    },
+    {
+      "title": "Ichiro Teriyaki",
+      "location": { lat: 47.65749297345125, lng: -122.3127356171608 },
+      "features":
+      {
+        "male": false,
+        "female": false,
+        "unisex": true,
+        "handycap": false,
+        "changingStation": false,
+        "free": true,
+        "cost": 0,
+        "withPurchase": false,
+        "publicRestRoom": false
+      },
+      "rating": "3",
+      "type": "unisex",
+      "comments": ["Bathrooms are relatively clean despite the traffic to this popular coffee house."]
+    },
+    {
+      "title": "Shultzy's Bar and Grill",
+      "location": { lat: 47.65731682658052, lng: -122.31286033987999 },
+      "features":
+      {
+        "male": true,
+        "female": false,
+        "unisex": false,
+        "handycap": false,
+        "changingStation": false,
+        "free": true,
+        "cost": 0,
+        "withPurchase": false,
+        "publicRestRoom": false
+      },
+      "rating": "4",
+      "type": "male",
+      "comments": ["Bathrooms are very clean."]
+    },
+    {
+      "title": "Shultzy's Bar and Grill",
+      "location": { lat: 47.657324053130516, lng: -122.31281340122223 },
+      "features":
+      {
+        "male": false,
+        "female": true,
+        "unisex": false,
+        "handycap": false,
+        "changingStation": false,
+        "free": true,
+        "cost": 0,
+        "withPurchase": false,
+        "publicRestRoom": false
+      },
+      "rating": "4",
+      "type": "female",
+      "comments": ["Bathrooms are very clean."]
+    },
+    {
+      "title": "University Kitchen",
+      "location": { lat: 47.65715513226328, lng: -122.31288850307465 },
+      "features":
+      {
+        "male": true,
+        "female": false,
+        "unisex": false,
+        "handycap": false,
+        "changingStation": false,
+        "free": true,
+        "cost": 0,
+        "withPurchase": false,
+        "publicRestRoom": false
+      },
+      "rating": "1",
+      "type": "male",
+      "comments": ["Filthy disgusting hell hole."]
+    },
+    {
+      "title": "University Kitchen",
+      "location": { lat: 47.657165068800005, lng: -122.31285095214844 },
+      "features":
+      {
+        "male": false,
+        "female": true,
+        "unisex": false,
+        "handycap": false,
+        "changingStation": false,
+        "free": true,
+        "cost": 0,
+        "withPurchase": false,
+        "publicRestRoom": false
+      },
+      "rating": "1",
+      "type": "female",
+      "comments": ["Filthy disgusting hell hole."]
+    },
   ];
   return bathroomsDB;
 };
-var bathrooms = getBathrooms();
+globalVariables.bathrooms = getBathrooms();
 
 
 //Function returns string of beautifully formatted bathroom features for infoWindow
@@ -143,16 +242,16 @@ function getFeatures(marker) {
   if (marker.features['publicRestRoom']) {
     brFeatures += "<p>Public Restroom: Yes</p>";
   };
-  if (marker.features['rating']) {
-    brFeatures += "<p>rating: " + marker.rating + "/5</p>";
+  if (marker.rating) {
+    brFeatures += "<p>Cleanliness Rating: " + marker.rating + "/5</p>";
   };
   if (marker.comments[0]) {
     for (comment in marker.comments) {
       brFeatures += "<p style=\"color:#ffcc00;\">" + marker.comments + "</p>";
-    }
-  }
+    };
+  };
   return brFeatures;
-}
+};
 
 
 function populateInfoWindow(marker, infowindow) {
@@ -180,15 +279,16 @@ function populateInfoWindow(marker, infowindow) {
         longitude: yelpLng,
       }
     }).done(function(data) {
+        console.log(data);
         var yelpRating = data['businesses'][0]['rating'];
         //make pretty stars
         if (yelpRating !== undefined) {
           for (var i=0; i<yelpRating; i++){
             yelpStars += '★';
-          }
+          };
           for (var i=0; i<(5-yelpRating); i++) {
             yelpStars += '☆';
-          }
+          };
         }
         else {
           yelpStars = 'unknown';
@@ -196,41 +296,43 @@ function populateInfoWindow(marker, infowindow) {
         infowindow.setContent('<div><h2>' + marker.title + '</h2>'
                               + '<p>Venue Yelp Rating: ' + yelpStars + '</p>'
                               + brFeatures + '</div>');
-        infowindow.open(map, marker);
+        infowindow.open(globalVariables.map, marker);
         // Make sure the marker property is cleared if the infowindow is closed.
         infowindow.addListener('closeclick', function() {
           infowindow.marker = null;
-          })
+        });
     }).fail(function(err){
       //handle error, and return an error
       infowindow.setContent('<div><h2>' + marker.title + '</h2>'
                             + 'Venue Yelp Rating: unknown' + '</p>'
                             + brFeatures + '</div>');
-      infowindow.open(map, marker);
+      infowindow.open(globalVariables.map, marker);
       // Make sure the marker property is cleared if the infowindow is closed.
       infowindow.addListener('closeclick', function() {
         infowindow.marker = null;
-        })
+      });
       throw err;
     });
-  }
-}
+  };
+};
 
 
 //function take in an array of bathrooms, an array of filter features, and
 //then sets markers onto map.  Only markers that pass the filter will be set.
-function showMarkers(bathroomsArray, filterFeatures) {
-  for (marker in markers) {
-    markers[marker].setMap(null);
+function showMarkers(bathroomsArray) {
+  for (marker in globalVariables.markers) {
+    globalVariables.markers[marker].setMap(null);
     //bounds.extend(markers[marker].position);
   };
-  markers = []
-  for(place in bathrooms) {
-    var position = bathrooms[place].location;
-    var title = bathrooms[place].title;
-    var features = bathrooms[place].features;
-    var rating = bathrooms[place].rating;
-    var comments = bathrooms[place].comments;
+  globalVariables.markers = []
+  for(place in globalVariables.bathrooms) {
+    var current = globalVariables.bathrooms[place];
+    var position = current.location;
+    var title = current.title;
+    var features = current.features;
+    var rating = current.rating;
+    var comments = current.comments;
+    var icon = globalVariables.icons[current.type].icon;
     var marker = new google.maps.Marker({
       position: position,
       title: title,
@@ -239,43 +341,44 @@ function showMarkers(bathroomsArray, filterFeatures) {
       animation: google.maps.Animation.DROP,
       id: place,
       comments: comments,
-      icon: icons[bathrooms[place].type].icon
+      icon: icon,
     });
-    markers.push(marker);
+    console.log(icon);
+    globalVariables.markers.push(marker);
     //set up marker's to open infowindow on click
     marker.addListener('click', function() {
-     clickMarker.setMap(null);
-     populateInfoWindow(this, infoWindow);
+     globalVariables.clickMarker.setMap(null);
+     populateInfoWindow(this, globalVariables.infoWindow);
    });
    //var bounds = new google.maps.LatLngBounds();
   // Extend the boundaries of the map for each marker and display the marker
   };
   //set markers
-  for (marker in markers) {
+  for (marker in globalVariables.markers) {
     var filterShowBool = false;
-    if ((filterFeatures["male"] && markers[marker]["features"]["male"]) ||
-        (filterFeatures["female"] && markers[marker]["features"]["female"]) ||
-        (filterFeatures["unisex"] && markers[marker]["features"]["unisex"])) {
+    if ((globalVariables.filterFeatures["male"] && globalVariables.markers[marker]["features"]["male"]) ||
+        (globalVariables.filterFeatures["female"] && globalVariables.markers[marker]["features"]["female"]) ||
+        (globalVariables.filterFeatures["unisex"] && globalVariables.markers[marker]["features"]["unisex"])) {
           filterShowBool = true;
-      for (feature in markers[marker]["features"]){
-        if (filterFeatures[feature] && feature !== "male" && feature !== "female" && feature !== "unisex") {
-          if (filterFeatures[feature] && markers[marker]["features"][feature]){
+      for (feature in globalVariables.markers[marker]["features"]){
+        if (globalVariables.filterFeatures[feature] && feature !== "male" && feature !== "female" && feature !== "unisex") {
+          if (globalVariables.filterFeatures[feature] && globalVariables.markers[marker]["features"][feature]){
             filterShowBool = true;
           }
           else {
             filterShowBool = false;
             break;
           };
-         }
-      }
-    }
-    if (filterFeatures.showAll) {
+        };
+      };
+    };
+    if (globalVariables.filterFeatures.showAll) {
       filterShowBool = true;
-    }
+    };
     if (filterShowBool) {
-      markers[marker].setMap(map);
-    }
-  }
+      globalVariables.markers[marker].setMap(globalVariables.map);
+    };
+  };
 };
 
 
@@ -285,46 +388,52 @@ var ViewModel = function() {
   var arrayToClear = [];
   self = this;
 
+
+  //this helps hide our slide out filter
   self.hideMenu = function() {
     $optionsBox.css('-webkit-transition','opacity .3s');
     $optionsBox.css('transition','opacity .3s');
     $optionsBox.css('transition-delay','0s');
-  }
+  };
 
+
+  //this helps show our slide out filter
   self.showMenu = function() {
     $optionsBox.css('-webkit-transition','opacity 1s');
     $optionsBox.css('transition','opacity 1s');
     $optionsBox.css('transition-delay','2s');
-  }
+  };
 
+
+  // this ugly thing is what allows bindings in the right click menu.
   self.mapBind = function() { //for some reason map object is out of scope unless it is inside a binding.
-    clickMarker = new google.maps.Marker();
+    globalVariables.clickMarker = new google.maps.Marker();
     //keep event handlers from piling up
-    google.maps.event.clearInstanceListeners(map);
-    map.addListener('click', function() {
-      infoWindow.close();
+    google.maps.event.clearInstanceListeners(globalVariables.map);
+    globalVariables.map.addListener('click', function() {
+      globalVariables.infoWindow.close();
       //clean up markers
       for (item in arrayToClear) {
        arrayToClear[item].setMap(null);
       };
-      clickMarker.setMap(null);
+      globalVariables.clickMarker.setMap(null);
     });
-    var listener = map.addListener('rightclick', function( event ){
+    var listener = globalVariables.map.addListener('rightclick', function( event ){
       //clean up markers
       for (item in arrayToClear) {
         arrayToClear[item].setMap(null);
       };
-      clickMarker.setMap(null);
+      globalVariables.clickMarker.setMap(null);
       var onClickLatlng = {lat: event.latLng.lat(), lng: event.latLng.lng()};
       console.log(onClickLatlng);
-      clickMarker = new google.maps.Marker({
+      globalVariables.clickMarker = new google.maps.Marker({
         position: onClickLatlng,
-        icon: 'img/toilet.jpg'
+        icon: 'img/toilet.png'
       });
-      clickMarker.setMap(map);
-      arrayToClear.push(clickMarker);
-      infoWindow.close();
-      infoWindow.setContent("<input data-bind=\"value: newName\" id=\"nameadd\" placeholder=\"venue name\"><div>"
+      globalVariables.clickMarker.setMap(globalVariables.map);
+      arrayToClear.push(globalVariables.clickMarker);
+      globalVariables.infoWindow.close();
+      globalVariables.infoWindow.setContent("<input data-bind=\"value: newName\" id=\"nameadd\" placeholder=\"venue name\"><div>"
       + "  Male: <input type=\"radio\" data-bind=\"checked: newMale\" id=\"maleadd\" name=\"gender\">"
       + "  Female: <input type=\"radio\" data-bind=\"checked: newFemale\" id=\"femaleadd\" name=\"gender\">"
       + "  Unisex: <input type=\"radio\" data-bind=\"checked: newUnisex\" id=\"unisexadd\" name=\"gender\"><br>"
@@ -341,11 +450,11 @@ var ViewModel = function() {
       + "  5: <input type=\"radio\" value=\"5\" data-bind=\"checked: newRating\" id=\"5add\" name=\"rating\"><br>"
       + "<input data-bind=\"value: newComment\" placeholder=\"Write a comment.\" id=\"comment\">"
       + "<input data-bind=\"click: addBathroom\" id=\"infoadd\" type=\"button\" value=\"Add Bathroom\">");
-      clickMarkerPosition = clickMarker.position;
-      infoWindow.open(map, clickMarker);
+      globalVariables.clickMarkerPosition = globalVariables.clickMarker.position;
+      globalVariables.infoWindow.open(globalVariables.map, globalVariables.clickMarker);
       isInfoWindowLoaded = false;
       //remove and reapply bindings to infoWindow
-      google.maps.event.addListener(infoWindow, 'domready', function () {
+      google.maps.event.addListener(globalVariables.infoWindow, 'domready', function () {
         $(".gm-style-iw").next("div").hide();
         ko.cleanNode($('#nameadd'));
         ko.cleanNode($('#maleadd'));
@@ -384,7 +493,7 @@ var ViewModel = function() {
           ko.applyBindings(self, $('#comment')[0]);
           ko.applyBindings(self, $('#infoadd')[0]);
           isInfoWindowLoaded = true;
-        }
+        };
       });
     }, false);
   };
@@ -400,8 +509,10 @@ var ViewModel = function() {
   self.filterPublicRestRoom = ko.observable();
   self.filterUnisex = ko.observable(true);
   self.filterShowAll = ko.observable();
+  //whenever a filter observable is changed this function is called to update
+  //the markers on the map.
   self.changeFilter = function() {
-    filterFeatures = {
+    globalVariables.filterFeatures = {
       changingStation: self.filterChangingStation(),
       female: self.filterFemale(),
       free: self.filterFree(),
@@ -412,8 +523,7 @@ var ViewModel = function() {
       unisex: self.filterUnisex(),
       showAll: self.filterShowAll()
     };
-    console.log(filterFeatures);
-    showMarkers(bathrooms, filterFeatures);
+    showMarkers(globalVariables.bathrooms);
     return true;
   };
 
@@ -432,25 +542,37 @@ var ViewModel = function() {
     self.newPublic = ko.observable();
     self.newRating = ko.observable();
     self.newComment = ko.observable();
-  }
+  };
   initBathroomObservables();
+
+
+  //this is called when you click "Add Bathroom" in the right click menu.
   self.addBathroom = function() {
     //batrooms need at least a name and gender
     if (!self.newName() || (!self.newMale() && !self.newFemale() && !self.newUnisex())) {
       alert("Please add venue name and gender before submitting.");
     }
     else {
-      bathrooms.push({title: self.newName(), location: clickMarkerPosition,
+      var newType;
+      if(self.newMale) {
+        newType = "male";
+      };
+      if(self.newFemale) {
+        newType = "female";
+      };
+      if(self.newUnisex) {
+        newType = "unisex";
+      };
+      globalVariables.bathrooms.push({title: self.newName(), location: globalVariables.clickMarkerPosition,
         features:
          {male: self.newMale(), female: self.newFemale(), unisex: self.newUnisex(), handycap: self.newHandycap(),
          changingStation: self.newChangingStation(), free: self.newFree(), cost: self.newCost(), withPurchase: !self.newWithPurchase(),
          publicRestRoom: self.newPublic()},
-        rating: self.newRating(), type: 'restroom', comments: [self.newComment()]});
-        infoWindow.close()
-        showMarkers(bathrooms, filterFeatures);
-    }
+        rating: self.newRating(), type: newType, comments: [self.newComment()]});
+        globalVariables.infoWindow.close()
+        showMarkers(globalVariables.bathrooms, globalVariables.filterFeatures);
+    };
      initBathroomObservables(); //reset observables
   };
 };
-
 ko.applyBindings(new ViewModel());

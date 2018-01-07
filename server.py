@@ -6,13 +6,20 @@ CORS(app, resources={r"/*": {"origins": "*"}}, send_wildcard=True)
 
 
 def callYelp(latitude, longitude, name):
-    api_key = '6nVFWurXJl9LWINDxsC3T6U67TjZKkvXr0nv3zFgp5_TFxlrpzHPJa3-mxO-_Ag6zMtchF8ujE0X0_uwUAz5G1v01Xn--sSCFaubwE-9vgCz7-u8eU7rzONGGTxMWnYx'
-    APIhost = "https://api.yelp.com/v3/businesses/search##?latitude=47.65736163117977&longitude=-122.31285631656647"
+    '''Function callYelp takes in latitude, longitude, and the name of a business
+    as name. Function makes search request to yelp's API, and then returns the
+    results.'''
+
+
+    api_key = '6nVFWurXJl9LWINDxsC3T6U67TjZKkvXr0nv3zFgp5_TFxlrpzHPJa3-mxO-_Ag6'
+    api_key += 'zMtchF8ujE0X0_uwUAz5G1v01Xn--sSCFaubwE-9vgCz7-u8eU7rzONGGTxMWnYx'
+    APIhost = 'https://api.yelp.com/v3/businesses/search##?latitude='
+    APIhost += '47.65736163117977&longitude=-122.31285631656647'
     url_params = {
         'latitude': latitude,
         'longitude': longitude,
-        #'term': 'Cafe Solstice,
-        'radius': 20,
+        'term': name,
+        'radius': 80,
         'limit': 1
     }
     headers = {
@@ -25,8 +32,10 @@ def callYelp(latitude, longitude, name):
 @app.route('/yelpAPI/', methods=['POST', 'GET'])
 @cross_origin()
 def showMenuJSON():
+    '''showMenuJSON handles AJAX request from app.js, from app.js takes latitude,
+     longitude, and name then calls callYelp to get data.  Data from yelp API is
+     jsonified and returned back to app.js for use.'''
     if request.method == 'POST':
-        print "HORSESS"
         latitude = request.form['latitude']
         longitude = request.form['longitude']
         name = request.form['name']
