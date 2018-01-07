@@ -39,10 +39,9 @@ function initMap() {
     position: globalVariables.map.getCenter(),
   });
   showMarkers(globalVariables.bathrooms, globalVariables.filterFeatures);
-  globalVariables.infoWindow.setContent("Right click on a location to create new bathrooms, "
-                      + "or hover over the filter tab on the left.")
+  globalVariables.infoWindow.setContent("Right click on a location to create new bathrooms, or hover over the filter tab on the left.");
   globalVariables.infoWindow.open(globalVariables.map);
-}; //END OF initMap()
+} //END OF initMap()
 
 
 //This function exists as a placeholder for future database implementation.
@@ -200,58 +199,57 @@ function getBathrooms() {
       },
       "rating": "1",
       "type": "female",
-      "comments": ["Filthy disgusting hell hole."]
+      "comments": ["Filthy disgusting hell hole.", "Everything is made of candy."]
     },
   ];
   return bathroomsDB;
-};
+}
 globalVariables.bathrooms = getBathrooms();
 
 
 //Function returns string of beautifully formatted bathroom features for infoWindow
 function getFeatures(marker) {
   var brFeatures = "";
-  if (marker.features['male']) {
+  if (marker.features.male) {
     brFeatures += "Gender: Male";
-  };
-  if (marker.features['female']) {
+  }
+  if (marker.features.female) {
     brFeatures += "<p>Gender: Female</p>";
-  };
-  if (marker.features['unisex']) {
+  }
+  if (marker.features.unisex) {
     brFeatures += "<p>Gender: Unisex</p>";
-  };
-  if (marker.features['handycap']) {
+  }
+  if (marker.features.handycap) {
     brFeatures += "<p>Handycap Accesible: Yes</p>";
-  };
-  if (marker.features['changingStation']) {
+  }
+  if (marker.features.changingStation) {
     brFeatures += "<p>Changing Station: Yes</p>";
-  };
-  if (marker.features['free']) {
+  }
+  if (marker.features.free) {
     brFeatures += "<p>Cost: Free</p>";
-  };
-
-  if (marker.features['cost'] && !(marker.features['cost'] && marker.features['free'])) {
-    brFeatures += "<p>Cost: " + marker.features['cost'] + '</p>';
-  };
-  if (marker.features['withPurchase']) {
+  }
+  if (marker.features.cost && !(marker.features.cost && marker.features.free)) {
+    brFeatures += "<p>Cost: " + marker.features.cost + '</p>';
+  }
+  if (marker.features.withPurchase) {
     brFeatures += "<p>Purchase Required: No</p>";
-  };
-  if (!marker.features['withPurchase']) {
+  }
+  if (!marker.features.withPurchase) {
     brFeatures += "<p>Purchase Required: Yes</p>";
-  };
-  if (marker.features['publicRestRoom']) {
+  }
+  if (marker.features.publicRestRoom) {
     brFeatures += "<p>Public Restroom: Yes</p>";
-  };
+  }
   if (marker.rating) {
     brFeatures += "<p>Cleanliness Rating: " + marker.rating + "/5</p>";
-  };
+  }
   if (marker.comments[0]) {
-    for (comment in marker.comments) {
-      brFeatures += "<p style=\"color:#ffcc00;\">" + marker.comments + "</p>";
-    };
-  };
+    for (var comment = 0; comment < marker.comments.length; comment++) {
+      brFeatures += "<p style=\"color:#ffcc00;\">" + marker.comments[comment] + "</p>";
+    }
+  }
   return brFeatures;
-};
+}
 
 
 function populateInfoWindow(marker, infowindow) {
@@ -262,7 +260,6 @@ function populateInfoWindow(marker, infowindow) {
     var yelpLng = marker.getPosition().lng();
     var yelpName = marker.title;
     var yelpStars = '';
-    var yelpRating;
     var url = "http://localhost:5000/yelpAPI/";
     //perform an ajax call to the server, and retrieve yelp API
     $.ajax({
@@ -279,22 +276,21 @@ function populateInfoWindow(marker, infowindow) {
         longitude: yelpLng,
       }
     }).done(function(data) {
-        var yelpRating = data['businesses'][0]['rating'];
+        var yelpRating = data.businesses[0].rating;
         //make pretty stars
         if (yelpRating !== undefined) {
-          for (var i=0; i<yelpRating; i++){
+          var ratingNumber = 0;
+          for (ratingNumber; i<yelpRating; i++){
             yelpStars += '★';
-          };
-          for (var i=0; i<(5-yelpRating); i++) {
+          }
+          for (ratingNumber; i<(5-yelpRating); i++) {
             yelpStars += '☆';
-          };
+          }
         }
         else {
           yelpStars = 'unknown';
-        };
-        infowindow.setContent('<div><h2>' + marker.title + '</h2>'
-                              + '<p>Venue Yelp Rating: ' + yelpStars + '</p>'
-                              + brFeatures + '</div>');
+        }
+        infowindow.setContent('<div><h2>' + marker.title + '</h2>' + '<p>Venue Yelp Rating: ' + yelpStars + '</p>' + brFeatures + '</div>');
         infowindow.open(globalVariables.map, marker);
         // Make sure the marker property is cleared if the infowindow is closed.
         infowindow.addListener('closeclick', function() {
@@ -302,9 +298,7 @@ function populateInfoWindow(marker, infowindow) {
         });
     }).fail(function(err){
       //handle error, and return an error
-      infowindow.setContent('<div><h2>' + marker.title + '</h2>'
-                            + 'Venue Yelp Rating: unknown' + '</p>'
-                            + brFeatures + '</div>');
+      infowindow.setContent('<div><h2>' + marker.title + '</h2>' + 'Venue Yelp Rating: unknown' + '</p>' + brFeatures + '</div>');
       infowindow.open(globalVariables.map, marker);
       // Make sure the marker property is cleared if the infowindow is closed.
       infowindow.addListener('closeclick', function() {
@@ -312,19 +306,31 @@ function populateInfoWindow(marker, infowindow) {
       });
       throw err;
     });
+  }
+}
+
+//This is used in show markers' addListener statement. It is here so that we
+//aren't creating the same function repeatedly in showMarkers' for loop.
+function addMarkerOnClick(){
+  return function() {
+    globalVariables.clickMarker.setMap(null); //clear new marker created from right click
+    for(var marker = 0; marker < globalVariables.markers.length; marker ++) {
+      globalVariables.markers[marker].setAnimation(null);
+    }
+    this.setAnimation(google.maps.Animation.BOUNCE);
+    populateInfoWindow(this, globalVariables.infoWindow);
   };
-};
+}
 
 
 //function take in an array of bathrooms, an array of filter features, and
 //then sets markers onto map.  Only markers that pass the filter will be set.
 function showMarkers(bathroomsArray) {
-  for (marker in globalVariables.markers) {
+  for (var marker = 0; marker < globalVariables.markers.length; marker++) {
     globalVariables.markers[marker].setMap(null);
-    //bounds.extend(markers[marker].position);
-  };
-  globalVariables.markers = []
-  for(place in globalVariables.bathrooms) {
+  }
+  globalVariables.markers = [];
+  for(var place = 0; place < globalVariables.bathrooms.length; place++) {
     var current = globalVariables.bathrooms[place];
     var position = current.location;
     var title = current.title;
@@ -332,7 +338,7 @@ function showMarkers(bathroomsArray) {
     var rating = current.rating;
     var comments = current.comments;
     var icon = globalVariables.icons[current.type].icon;
-    var marker = new google.maps.Marker({
+    var newMarker = new google.maps.Marker({
       position: position,
       title: title,
       features: features,
@@ -342,49 +348,44 @@ function showMarkers(bathroomsArray) {
       comments: comments,
       icon: icon,
     });
-    globalVariables.markers.push(marker);
+    globalVariables.markers.push(newMarker);
     //set up marker's to open infowindow on click
-    marker.addListener('click', function() {
-     globalVariables.clickMarker.setMap(null);
-     populateInfoWindow(this, globalVariables.infoWindow);
-   });
-   //var bounds = new google.maps.LatLngBounds();
-  // Extend the boundaries of the map for each marker and display the marker
-  };
+    newMarker.addListener('click', addMarkerOnClick());
+  }
   //set markers
-  for (marker in globalVariables.markers) {
+  for (var eachMarker = 0; eachMarker < globalVariables.markers.length; eachMarker++) {
     var filterShowBool = false;
-    if ((globalVariables.filterFeatures["male"] && globalVariables.markers[marker]["features"]["male"]) ||
-        (globalVariables.filterFeatures["female"] && globalVariables.markers[marker]["features"]["female"]) ||
-        (globalVariables.filterFeatures["unisex"] && globalVariables.markers[marker]["features"]["unisex"])) {
+    if ((globalVariables.filterFeatures.male && globalVariables.markers[eachMarker].features.male) ||
+        (globalVariables.filterFeatures.female && globalVariables.markers[eachMarker].features.female) ||
+        (globalVariables.filterFeatures.unisex && globalVariables.markers[eachMarker].features.unisex)) {
           filterShowBool = true;
-      for (feature in globalVariables.markers[marker]["features"]){
+      for (var feature = 0; feature < globalVariables.markers[eachMarker].features.length; feature++){
         if (globalVariables.filterFeatures[feature] && feature !== "male" && feature !== "female" && feature !== "unisex") {
-          if (globalVariables.filterFeatures[feature] && globalVariables.markers[marker]["features"][feature]){
+          if (globalVariables.filterFeatures[feature] && globalVariables.markers[eachMarker].features[feature]){
             filterShowBool = true;
           }
           else {
             filterShowBool = false;
             break;
-          };
-        };
-      };
-    };
+          }
+        }
+      }
+    }
     if (globalVariables.filterFeatures.showAll) {
       filterShowBool = true;
-    };
+    }
     if (filterShowBool) {
-      globalVariables.markers[marker].setMap(globalVariables.map);
-    };
-  };
-};
+      globalVariables.markers[eachMarker].setMap(globalVariables.map);
+    }
+  }
+}
 
 
 //this is the viewmodel
 var ViewModel = function() {
   var $optionsBox = $('.options-box');
   var arrayToClear = [];
-  self = this;
+  var self = this;
 
 
   //this helps hide our slide out filter
@@ -406,21 +407,28 @@ var ViewModel = function() {
   // this ugly thing is what allows bindings in the right click menu.
   self.mapBind = function() { //for some reason map object is out of scope unless it is inside a binding.
     globalVariables.clickMarker = new google.maps.Marker();
-    //keep event handlers from piling up
-    google.maps.event.clearInstanceListeners(globalVariables.map);
+    google.maps.event.clearInstanceListeners(globalVariables.map);  //keep event handlers from piling up
+
+    //clean up markers
     globalVariables.map.addListener('click', function() {
       globalVariables.infoWindow.close();
-      //clean up markers
-      for (item in arrayToClear) {
+      for (var item = 0; item < arrayToClear.length; item++) { //clear markers
        arrayToClear[item].setMap(null);
-      };
+      }
+      for(var marker = 0; marker < globalVariables.markers.length; marker ++) { //stop bouncing
+        globalVariables.markers[marker].setAnimation(null);
+      }
       globalVariables.clickMarker.setMap(null);
     });
+
+    //add map right click functionality
     var listener = globalVariables.map.addListener('rightclick', function( event ){
-      //clean up markers
-      for (item in arrayToClear) {
+      for (var item = 0; item < arrayToClear.length; item++) {  //clean up markers
         arrayToClear[item].setMap(null);
-      };
+      }
+      for(var marker = 0; marker < globalVariables.markers.length; marker ++) {  //stop bouncing
+        globalVariables.markers[marker].setAnimation(null);
+      }
       globalVariables.clickMarker.setMap(null);
       var onClickLatlng = {lat: event.latLng.lat(), lng: event.latLng.lng()};
       globalVariables.clickMarker = new google.maps.Marker({
@@ -430,23 +438,24 @@ var ViewModel = function() {
       globalVariables.clickMarker.setMap(globalVariables.map);
       arrayToClear.push(globalVariables.clickMarker);
       globalVariables.infoWindow.close();
-      globalVariables.infoWindow.setContent("<input data-bind=\"value: newName\" id=\"nameadd\" placeholder=\"venue name\"><div>"
-      + "  Male: <input type=\"radio\" data-bind=\"checked: newMale\" id=\"maleadd\" name=\"gender\">"
-      + "  Female: <input type=\"radio\" data-bind=\"checked: newFemale\" id=\"femaleadd\" name=\"gender\">"
-      + "  Unisex: <input type=\"radio\" data-bind=\"checked: newUnisex\" id=\"unisexadd\" name=\"gender\"><br>"
-      + "  Handycap: <input type=\"checkbox\" data-bind=\"checked: newHandycap\" id=\"handycapadd\">"
-      + " Changing Station: <input type=\"checkbox\" data-bind=\"checked: newChangingStation\" id=\"changingstationadd\"><br>"
-      + " Public Restroom: <input type=\"checkbox\" data-bind=\"checked: newPublic\" id=\"publicrestroomadd\"><br>"
-      + " Free to use: <input type=\"checkbox\" data-bind=\"checked: newFree\" id=\"freeadd\"><br>"
-      + " Purchase Required: <input type=\"checkbox\" data-bind=\"checked: newWithPurchase\" id=\"purchaseadd\"><br>"
-      + "<input data-bind=\"value: newCost, visible: !newFree()\" placeholder=\"Price to use.\" id=\"costadd\"></div><br>"
-      + "  1: <input type=\"radio\" value=\"1\" data-bind=\"checked: newRating\" id=\"1add\" name=\"rating\">"
-      + "  2: <input type=\"radio\" value=\"2\" data-bind=\"checked: newRating\" id=\"2add\" name=\"rating\">"
-      + "  3: <input type=\"radio\" value=\"3\" data-bind=\"checked: newRating\" id=\"3add\" name=\"rating\">"
-      + "  4: <input type=\"radio\" value=\"4\" data-bind=\"checked: newRating\" id=\"4add\" name=\"rating\">"
-      + "  5: <input type=\"radio\" value=\"5\" data-bind=\"checked: newRating\" id=\"5add\" name=\"rating\"><br>"
-      + "<input data-bind=\"value: newComment\" placeholder=\"Write a comment.\" id=\"comment\">"
-      + "<input data-bind=\"click: addBathroom\" id=\"infoadd\" type=\"button\" value=\"Add Bathroom\">");
+      var theHTML = ["<input data-bind=\"value: newName\" id=\"nameadd\" placeholder=\"venue name\"><div>",
+                     " Male: <input type=\"radio\" data-bind=\"checked: newMale\" id=\"maleadd\" name=\"gender\">",
+                     " Female: <input type=\"radio\" data-bind=\"checked: newFemale\" id=\"femaleadd\" name=\"gender\">",
+                     " Unisex: <input type=\"radio\" data-bind=\"checked: newUnisex\" id=\"unisexadd\" name=\"gender\"><br>",
+                     " Handycap: <input type=\"checkbox\" data-bind=\"checked: newHandycap\" id=\"handycapadd\">",
+                     " Changing Station: <input type=\"checkbox\" data-bind=\"checked: newChangingStation\" id=\"changingstationadd\"><br>",
+                     " Public Restroom: <input type=\"checkbox\" data-bind=\"checked: newPublic\" id=\"publicrestroomadd\"><br>",
+                     " Free to use: <input type=\"checkbox\" data-bind=\"checked: newFree\" id=\"freeadd\"><br>",
+                     " Purchase Required: <input type=\"checkbox\" data-bind=\"checked: newWithPurchase\" id=\"purchaseadd\"><br>",
+                     "<input data-bind=\"value: newCost, visible: !newFree()\" placeholder=\"Price to use.\" id=\"costadd\"></div><br>",
+                     " 1: <input type=\"radio\" value=\"1\" data-bind=\"checked: newRating\" id=\"1add\" name=\"rating\">",
+                     " 2: <input type=\"radio\" value=\"2\" data-bind=\"checked: newRating\" id=\"2add\" name=\"rating\">",
+                     " 3: <input type=\"radio\" value=\"3\" data-bind=\"checked: newRating\" id=\"3add\" name=\"rating\">",
+                     " 4: <input type=\"radio\" value=\"4\" data-bind=\"checked: newRating\" id=\"4add\" name=\"rating\">",
+                     " 5: <input type=\"radio\" value=\"5\" data-bind=\"checked: newRating\" id=\"5add\" name=\"rating\"><br>",
+                     "<input data-bind=\"value: newComment\" placeholder=\"Write a comment.\" id=\"comment\">",
+                     "<input data-bind=\"click: addBathroom\" id=\"infoadd\" type=\"button\" value=\"Add Bathroom\">"];
+      globalVariables.infoWindow.setContent(theHTML.join(""));
       globalVariables.clickMarkerPosition = globalVariables.clickMarker.position;
       globalVariables.infoWindow.open(globalVariables.map, globalVariables.clickMarker);
       isInfoWindowLoaded = false;
@@ -490,7 +499,7 @@ var ViewModel = function() {
           ko.applyBindings(self, $('#comment')[0]);
           ko.applyBindings(self, $('#infoadd')[0]);
           isInfoWindowLoaded = true;
-        };
+        }
       });
     }, false);
   };
@@ -539,7 +548,7 @@ var ViewModel = function() {
     self.newPublic = ko.observable();
     self.newRating = ko.observable();
     self.newComment = ko.observable();
-  };
+  }
   initBathroomObservables();
 
 
@@ -553,22 +562,22 @@ var ViewModel = function() {
       var newType;
       if(self.newMale) {
         newType = "male";
-      };
+      }
       if(self.newFemale) {
         newType = "female";
-      };
+      }
       if(self.newUnisex) {
         newType = "unisex";
-      };
+      }
       globalVariables.bathrooms.push({title: self.newName(), location: globalVariables.clickMarkerPosition,
         features:
          {male: self.newMale(), female: self.newFemale(), unisex: self.newUnisex(), handycap: self.newHandycap(),
          changingStation: self.newChangingStation(), free: self.newFree(), cost: self.newCost(), withPurchase: !self.newWithPurchase(),
          publicRestRoom: self.newPublic()},
         rating: self.newRating(), type: newType, comments: [self.newComment()]});
-        globalVariables.infoWindow.close()
+        globalVariables.infoWindow.close();
         showMarkers(globalVariables.bathrooms, globalVariables.filterFeatures);
-    };
+    }
      initBathroomObservables(); //reset observables
   };
 };
