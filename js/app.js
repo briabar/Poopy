@@ -6,13 +6,13 @@ var pos = {};
 var markers = [];
 var clickMarker;
 var clickMarkerPosition;
-filterFeatures = {
-  changingStation: true,
+var filterFeatures = {
+  changingStation: false,
   female: true,
-  free: true,
-  handycap: true,
+  free: false,
+  handycap: false,
   male: true,
-  publicRestRoom: true,
+  publicRestRoom: false,
   unisex: true
 };
 var onClickLatlng;
@@ -23,32 +23,6 @@ var icons = {
   meMarker: {
     icon: 'img/me.png'
   }
-}
-
-function getYelpJSON(lat, lng) {
-  //console.log(lat+lng);
-  var url = "http://localhost:5000/yelpAPI/";
-  var tmp;
-  //console.log(url);
-  $.ajax({
-    'cache': false,
-    'async': true,
-    'crossDomain': true,
-    'url': url,
-    'method': 'POST',
-    'dataType': 'json',
-    'data': {
-      name: 'cafe solstice',
-      latitude: lat,
-      longitude: lng,
-    }
-  }).done(function(data) {
-    tmp = data;
-    return tmp;
-  }).fail(function(err){
-    console.log("meow");
-    throw err;
-  });
 };
 
 
@@ -59,16 +33,22 @@ function initMap() {
     zoom: 20,
     mapTypeControl: false
   });
-  infoWindow = new google.maps.InfoWindow();
+  infoWindow = new google.maps.InfoWindow({
+    position: map.getCenter(),
+  });
   showMarkers(bathrooms, filterFeatures);
+  infoWindow.setContent("Right click on a location to create new bathrooms, "
+                      + "or hover over the filter tab on the left.")
+  infoWindow.open(map);
 }; //END OF initMap()
+
 
 function getBathrooms() {
   //This function exists as a placeholder for future database implementation.
   //Once database is implemented, changing out this function is trivial.
   var bathroomsDB = [
-    {"title": "Sure Shot Cafe",
-     "location": {"lat":47.66148,"lng":-122.31346},
+    {"title": "Sureshot Espresso",
+     "location": {"lat": 47.661416829669996,"lng":-122.31337934732437},
      "features":
       {
         "male": true,
@@ -81,7 +61,7 @@ function getBathrooms() {
         "withPurchase": false,
         "publicRestRoom": true
       },
-      "rating": 4,
+      "rating": "4",
       "type": "restroom",
       "comments": ["Always clean, but sometimes busy."]
     },
@@ -91,21 +71,33 @@ function getBathrooms() {
       "features":
       {
         "male": true,
+        "female": false,
+        "unisex": false,
         "handycap": true,
-        "free": true
+        "changingStation": false,
+        "free": true,
+        "cost": 0,
+        "withPurchase": true,
+        "publicRestRoom": true
       },
       "rating": "3",
       "type": "restroom",
       "comments": ["Bathrooms are relatively clean despite the traffic to this popular coffee house."]
     },
     {
-      "title": "Solstice Cafe",
+      "title": "Cafe Solstice",
       "location": {"lat":47.65736163117977,"lng":-122.31281206011772},
       "features":
       {
+        "male": false,
         "female": true,
+        "unisex": false,
         "handycap": true,
-        "free": true
+        "changingStation": false,
+        "free": true,
+        "cost": 0,
+        "withPurchase": true,
+        "publicRestRoom": true
       },
       "rating": "3",
       "type": "restroom",
@@ -114,8 +106,6 @@ function getBathrooms() {
   ];
   return bathroomsDB;
 };
-
-
 var bathrooms = getBathrooms();
 
 
@@ -145,6 +135,9 @@ function getFeatures(marker) {
     brFeatures += "<p>Cost: " + marker.features['cost'] + '</p>';
   };
   if (marker.features['withPurchase']) {
+    brFeatures += "<p>Purchase Required: No</p>";
+  };
+  if (!marker.features['withPurchase']) {
     brFeatures += "<p>Purchase Required: Yes</p>";
   };
   if (marker.features['publicRestRoom']) {
@@ -168,27 +161,64 @@ function populateInfoWindow(marker, infowindow) {
     var brFeatures = getFeatures(marker);
     var yelpLat = marker.getPosition().lat();
     var yelpLng = marker.getPosition().lng();
-    var yelpJSON = getYelpJSON(yelpLat, yelpLng);
-    console.log(yelpJSON);
+    var yelpName = marker.title;
+    var yelpStars = '';
     var yelpRating;
-    if (yelpJSON['businesses'][0]['rating']) {
-      yelpRating = (('★' * yelpJSON[0]['rating'])
-                     + ('☆' * (5 - yelpJSON[0]['rating'])));
-    }
-    else {
-      yelpRating = '';
-    };
-    infowindow.setContent('<div><h2>' + marker.title + '</h2>'
-                          + '<p>Venue Yelp Rating: ' + yelpRating + '</p>'
-                          + brFeatures + '</div>');
-    infowindow.open(map, marker);
-    // Make sure the marker property is cleared if the infowindow is closed.
-    infowindow.addListener('closeclick', function() {
-      infowindow.marker = null;
+    var url = "http://localhost:5000/yelpAPI/";
+    //perform an ajax call to the server, and retrieve yelp API
+    $.ajax({
+      'timeout': 1000,
+      'cache': false,
+      'async': true,
+      'crossDomain': true,
+      'url': url,
+      'method': 'POST',
+      'dataType': 'json',
+      'data': {
+        name: yelpName,
+        latitude: yelpLat,
+        longitude: yelpLng,
+      }
+    }).done(function(data) {
+        var yelpRating = data['businesses'][0]['rating'];
+        //make pretty stars
+        if (yelpRating !== undefined) {
+          for (var i=0; i<yelpRating; i++){
+            yelpStars += '★';
+          }
+          for (var i=0; i<(5-yelpRating); i++) {
+            yelpStars += '☆';
+          }
+        }
+        else {
+          yelpStars = 'unknown';
+        };
+        infowindow.setContent('<div><h2>' + marker.title + '</h2>'
+                              + '<p>Venue Yelp Rating: ' + yelpStars + '</p>'
+                              + brFeatures + '</div>');
+        infowindow.open(map, marker);
+        // Make sure the marker property is cleared if the infowindow is closed.
+        infowindow.addListener('closeclick', function() {
+          infowindow.marker = null;
+          })
+    }).fail(function(err){
+      //handle error, and return an error
+      infowindow.setContent('<div><h2>' + marker.title + '</h2>'
+                            + 'Venue Yelp Rating: unknown' + '</p>'
+                            + brFeatures + '</div>');
+      infowindow.open(map, marker);
+      // Make sure the marker property is cleared if the infowindow is closed.
+      infowindow.addListener('closeclick', function() {
+        infowindow.marker = null;
+        })
+      throw err;
     });
   }
 }
 
+
+//function take in an array of bathrooms, an array of filter features, and
+//then sets markers onto map.  Only markers that pass the filter will be set.
 function showMarkers(bathroomsArray, filterFeatures) {
   for (marker in markers) {
     markers[marker].setMap(null);
@@ -212,21 +242,21 @@ function showMarkers(bathroomsArray, filterFeatures) {
       icon: icons[bathrooms[place].type].icon
     });
     markers.push(marker);
+    //set up marker's to open infowindow on click
     marker.addListener('click', function() {
      clickMarker.setMap(null);
      populateInfoWindow(this, infoWindow);
    });
-   var bounds = new google.maps.LatLngBounds();
+   //var bounds = new google.maps.LatLngBounds();
   // Extend the boundaries of the map for each marker and display the marker
   };
-
+  //set markers
   for (marker in markers) {
-    var filterShowBool = false
-    //console.log(markers[marker]);
+    var filterShowBool = false;
     if ((filterFeatures["male"] && markers[marker]["features"]["male"]) ||
         (filterFeatures["female"] && markers[marker]["features"]["female"]) ||
         (filterFeatures["unisex"] && markers[marker]["features"]["unisex"])) {
-      filterShowBool = true;
+          filterShowBool = true;
       for (feature in markers[marker]["features"]){
         if (filterFeatures[feature] && feature !== "male" && feature !== "female" && feature !== "unisex") {
           if (filterFeatures[feature] && markers[marker]["features"][feature]){
@@ -235,7 +265,7 @@ function showMarkers(bathroomsArray, filterFeatures) {
           else {
             filterShowBool = false;
             break;
-          }
+          };
          }
       }
     }
@@ -246,13 +276,26 @@ function showMarkers(bathroomsArray, filterFeatures) {
       markers[marker].setMap(map);
     }
   }
-}
+};
 
 
 //this is the viewmodel
 var ViewModel = function() {
+  var $optionsBox = $('.options-box');
   var arrayToClear = [];
   self = this;
+
+  self.hideMenu = function() {
+    $optionsBox.css('-webkit-transition','opacity .3s');
+    $optionsBox.css('transition','opacity .3s');
+    $optionsBox.css('transition-delay','0s');
+  }
+
+  self.showMenu = function() {
+    $optionsBox.css('-webkit-transition','opacity 1s');
+    $optionsBox.css('transition','opacity 1s');
+    $optionsBox.css('transition-delay','2s');
+  }
 
   self.mapBind = function() { //for some reason map object is out of scope unless it is inside a binding.
     clickMarker = new google.maps.Marker();
@@ -286,8 +329,10 @@ var ViewModel = function() {
       + "  Female: <input type=\"radio\" data-bind=\"checked: newFemale\" id=\"femaleadd\" name=\"gender\">"
       + "  Unisex: <input type=\"radio\" data-bind=\"checked: newUnisex\" id=\"unisexadd\" name=\"gender\"><br>"
       + "  Handycap: <input type=\"checkbox\" data-bind=\"checked: newHandycap\" id=\"handycapadd\">"
-      + " Changing Station:<input type=\"checkbox\" data-bind=\"checked: newChangingStation\" id=\"changingstationadd\"><br>"
+      + " Changing Station: <input type=\"checkbox\" data-bind=\"checked: newChangingStation\" id=\"changingstationadd\"><br>"
+      + " Public Restroom: <input type=\"checkbox\" data-bind=\"checked: newPublic\" id=\"publicrestroomadd\"><br>"
       + " Free to use: <input type=\"checkbox\" data-bind=\"checked: newFree\" id=\"freeadd\"><br>"
+      + " Purchase Required: <input type=\"checkbox\" data-bind=\"checked: newWithPurchase\" id=\"purchaseadd\"><br>"
       + "<input data-bind=\"value: newCost, visible: !newFree()\" placeholder=\"Price to use.\" id=\"costadd\"></div><br>"
       + "  1: <input type=\"radio\" value=\"1\" data-bind=\"checked: newRating\" id=\"1add\" name=\"rating\">"
       + "  2: <input type=\"radio\" value=\"2\" data-bind=\"checked: newRating\" id=\"2add\" name=\"rating\">"
@@ -308,7 +353,9 @@ var ViewModel = function() {
         ko.cleanNode($('#unisexadd'));
         ko.cleanNode($('#handycapadd'));
         ko.cleanNode($('#changingstationadd'));
+        ko.cleanNode($('#publicrestroomadd'));
         ko.cleanNode($('#freeadd'));
+        ko.cleanNode($('#purchaseadd'));
         ko.cleanNode($('#showcost'));
         ko.cleanNode($('#costadd'));
         ko.cleanNode($('#1add'));
@@ -325,7 +372,9 @@ var ViewModel = function() {
           ko.applyBindings(self, $('#unisexadd')[0]);
           ko.applyBindings(self, $('#handycapadd')[0]);
           ko.applyBindings(self, $('#changingstationadd')[0]);
+          ko.applyBindings(self, $('#publicrestroomadd')[0]);
           ko.applyBindings(self, $('#freeadd')[0]);
+          ko.applyBindings(self, $('#purchaseadd')[0]);
           ko.applyBindings(self, $('#costadd')[0]);
           ko.applyBindings(self, $('#1add')[0]);
           ko.applyBindings(self, $('#2add')[0]);
@@ -339,13 +388,13 @@ var ViewModel = function() {
       });
     }, false);
   };
-  // console.log(map);
 
 
   //filter markers.
   self.filterChangingStation = ko.observable();
   self.filterFemale = ko.observable(true);
   self.filterFree = ko.observable();
+  self.filterPurchase = ko.observable();
   self.filterHandycap = ko.observable();
   self.filterMale = ko.observable(true);
   self.filterPublicRestRoom = ko.observable();
@@ -356,12 +405,14 @@ var ViewModel = function() {
       changingStation: self.filterChangingStation(),
       female: self.filterFemale(),
       free: self.filterFree(),
+      withPurchase: self.filterPurchase(),
       handycap: self.filterHandycap(),
       male: self.filterMale(),
       publicRestRoom: self.filterPublicRestRoom(),
       unisex: self.filterUnisex(),
       showAll: self.filterShowAll()
     };
+    console.log(filterFeatures);
     showMarkers(bathrooms, filterFeatures);
     return true;
   };
@@ -392,7 +443,7 @@ var ViewModel = function() {
       bathrooms.push({title: self.newName(), location: clickMarkerPosition,
         features:
          {male: self.newMale(), female: self.newFemale(), unisex: self.newUnisex(), handycap: self.newHandycap(),
-         changingStation: self.newChangingStation(), free: self.newFree(), cost: self.newCost(), withPurchase: self.newWithPurchase(),
+         changingStation: self.newChangingStation(), free: self.newFree(), cost: self.newCost(), withPurchase: !self.newWithPurchase(),
          publicRestRoom: self.newPublic()},
         rating: self.newRating(), type: 'restroom', comments: [self.newComment()]});
         infoWindow.close()

@@ -22,22 +22,80 @@
       #map {
         height: 100%;
       }
+      .inputbtncont {
+        display: block;
+        height: 5px;
+        padding-left: 15px;
+        text-indent: -15px;
+        flex-grow: 1;
+      }
+      .inputbtn {
+        /* height: 30px;
+        width: 30px; */
+        padding: 0;
+        margin:0;
+        vertical-align: bottom;
+        position: relative;
+        /* top: -1px; */
+        /* padding-left: 5px; */
+      }
+      .container {
+        display: flex;
+        height: 150px;
+        width: 25px;
+        /* overflow: hidden; */
+        position: fixed;
+        background-color: rgba(0,0,0,0.9);
+        z-index: 1000;
+        -webkit-transition: width 2s, background-color 3s; /* Safari */
+        transition: width 2s, background-color 3s;
+      }
+      .container:hover {
+        width: 80%;
+        background-color: rgba(130,130,130,130);
+      }
+
+      .options-box {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        font-size: 1.3em;
+        height: 100%;
+        opacity: 0;
+        -webkit-transition: opacity 1s; /* Safari */
+        transition: opacity 1s;
+        transition-delay: 2s;
+      }
+      .options-box:hover {
+        opacity: 1;
+      }
+      .hide {
+        visibility: hidden;
+      }
+      .filter-img {
+        position: absolute;
+        background-image:url("img/filter.jpg");
+        height: 100%;
+        width: 25px;
+      }
     </style>
 </head>
 <body>
   <main>
-    <aside class="container">
-    <div class="options-box">
-      Male<input type="checkbox" data-bind=" checked: filterMale, click: changeFilter">
-      Female<input type="checkbox" data-bind="checked: filterFemale, click: changeFilter">
-      Unisex<input type="checkbox" data-bind="checked: filterUnisex, click: changeFilter">
-      Free<input type="checkbox" data-bind="checked: filterFree, click: changeFilter">
-      CS<input type="checkbox" data-bind="checked: filterChangingStation, click: changeFilter">
-      HC<input type="checkbox" data-bind="checked: filterHandycap, click: changeFilter">
-      Public Restroom<input type="checkbox" data-bind="checked: filterPublicRestRoom, click: changeFilter">
-      Show All<input type="checkbox" data-bind="checked: filterShowAll, click: changeFilter">
+    <aside class="container" data-bind="event: {mouseover: showMenu}">
+    <div class="filter-img"></div>
+    <div class="options-box" data-bind="event: {mouseout: hideMenu}">
+        <div class="inputbtncont"></div>
+        <label for="male" class="inputbtncont">Male<input id="male" class="inputbtn" type="checkbox" data-bind=" checked: filterMale, click: changeFilter"></label>
+        <label for="female" class="inputbtncont">Female<input id="female" class="inputbtn" type="checkbox" data-bind="checked: filterFemale, click: changeFilter"></label>
+        <label for="unisex" class="inputbtncont">Unisex<input id="unisex" class="inputbtn" type="checkbox" data-bind="checked: filterUnisex, click: changeFilter"></label>
+        <label for="free" class="inputbtncont">Free<input id="free" class="inputbtn" type="checkbox" data-bind="checked: filterFree, click: changeFilter"></label>
+        <label for="free" class="inputbtncont">No Purchase Required<input id="purchase" class="inputbtn" type="checkbox" data-bind="checked: filterPurchase, click: changeFilter"></label>
+        <label for="changing" class="inputbtncont">Changing Station<input id="changing" class="inputbtn" type="checkbox" data-bind="checked: filterChangingStation, click: changeFilter"></label>
+        <label for="handy" class="inputbtncont">Handycap<input id="handy" class="inputbtn" type="checkbox" data-bind="checked: filterHandycap, click: changeFilter"></label>
+        <label for="pub" class="inputbtncont">Public Restroom<input id="pub" class="inputbtn" type="checkbox" data-bind="checked: filterPublicRestRoom, click: changeFilter"></label>
+        <label for="show" class="inputbtncont">Show All<input id="show" class="inputbtn" type="checkbox" data-bind="checked: filterShowAll, click: changeFilter"></label>
     </div>
-    <img src='img/me.png' alt='You are here!'>
   </aside>
     <div data-bind="event: {mouseover: mapBind}, mouseout: disable" id="map"></div>
   </main>
