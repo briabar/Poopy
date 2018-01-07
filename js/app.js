@@ -280,10 +280,11 @@ function populateInfoWindow(marker, infowindow) {
         //make pretty stars
         if (yelpRating !== undefined) {
           var ratingNumber = 0;
-          for (ratingNumber; i<yelpRating; i++){
+          for (ratingNumber; ratingNumber < yelpRating; ratingNumber++){
             yelpStars += '★';
           }
-          for (ratingNumber; i<(5-yelpRating); i++) {
+          console.log(yelpRating);
+          for (ratingNumber = 1; ratingNumber < (5-yelpRating); ratingNumber++) {
             yelpStars += '☆';
           }
         }
