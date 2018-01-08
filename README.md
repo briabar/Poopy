@@ -12,6 +12,13 @@ Installation
 
 In order to run the application you must first run the included server.py file.
 This server acts as a middleman for doing yelp API calls.
+## Dendencies and Runtime Environment
+The server must be run in python 2, and you must have the following modules installed:
+Flask, install with "pip install flask"
+Flask CORS, install with "pip install flask_cors"
+requests, install with "pip install requests"
+##To Run
+Use command "python server.py"
 
 Features
 ------------------
