@@ -354,13 +354,13 @@ function showMarkers(bathroomsArray) {
     newMarker.addListener('click', addMarkerOnClick());
   }
   //set markers
-  for (var eachMarker = 0; eachMarker < globalVariables.markers.length; eachMarker++) {
+  for (var eachMarker in globalVariables.markers) {
     var filterShowBool = false;
     if ((globalVariables.filterFeatures.male && globalVariables.markers[eachMarker].features.male) ||
         (globalVariables.filterFeatures.female && globalVariables.markers[eachMarker].features.female) ||
         (globalVariables.filterFeatures.unisex && globalVariables.markers[eachMarker].features.unisex)) {
           filterShowBool = true;
-      for (var feature = 0; feature < globalVariables.markers[eachMarker].features.length; feature++){
+      for (var feature in globalVariables.markers[eachMarker].features){
         if (globalVariables.filterFeatures[feature] && feature !== "male" && feature !== "female" && feature !== "unisex") {
           if (globalVariables.filterFeatures[feature] && globalVariables.markers[eachMarker].features[feature]){
             filterShowBool = true;
