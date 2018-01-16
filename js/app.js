@@ -337,6 +337,12 @@ function setMarkers() {
     var hasGenderMatch = (globalVariables.filterFeatures.male && globalVariables.markers[eachMarker].features.male) ||
         (globalVariables.filterFeatures.female && globalVariables.markers[eachMarker].features.female) ||
         (globalVariables.filterFeatures.unisex && globalVariables.markers[eachMarker].features.unisex);
+    var noGenderSelected = !globalVariables.filterFeatures.male &&
+        !globalVariables.filterFeatures.female &&
+        !globalVariables.filterFeatures.unisex;
+    //Below is the logic for the filter. There is probably a better way to make this work.
+    //As of 1/16/2018 this code needs some refactoring.  IF YOU REFACTOR IT PLEASE
+    //UPDATE THIS COMMENT!
     if (hasGenderMatch) {
           filterShowBool = true;
       for (var feature in globalVariables.markers[eachMarker].features){
@@ -353,9 +359,7 @@ function setMarkers() {
         }
       }
     }
-    if (!globalVariables.filterFeatures.male &&
-        !globalVariables.filterFeatures.female &&
-        !globalVariables.filterFeatures.unisex) {
+    if (noGenderSelected) {
           for (var alsoFeature in globalVariables.markers[eachMarker].features){
             if (globalVariables.markers[eachMarker].features.hasOwnProperty(alsoFeature)){
               if (globalVariables.filterFeatures[alsoFeature] && alsoFeature !== "male" && alsoFeature !== "female" && alsoFeature !== "unisex") {
