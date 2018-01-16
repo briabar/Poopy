@@ -29,7 +29,7 @@ var globalVariables = { //this object holds all our globals to help keep our foo
 
 window.onerror = function(e) {
   alert("Something went wrong..." + e);
-}
+};
 
 function initMap() {
 // Constructor creates a new map
@@ -356,10 +356,10 @@ function setMarkers() {
     if (!globalVariables.filterFeatures.male &&
         !globalVariables.filterFeatures.female &&
         !globalVariables.filterFeatures.unisex) {
-          for (var feature in globalVariables.markers[eachMarker].features){
-            if (globalVariables.markers[eachMarker].features.hasOwnProperty(feature)){
-              if (globalVariables.filterFeatures[feature] && feature !== "male" && feature !== "female" && feature !== "unisex") {
-                if (globalVariables.filterFeatures[feature] && globalVariables.markers[eachMarker].features[feature]){
+          for (var alsoFeature in globalVariables.markers[eachMarker].features){
+            if (globalVariables.markers[eachMarker].features.hasOwnProperty(alsoFeature)){
+              if (globalVariables.filterFeatures[alsoFeature] && alsoFeature !== "male" && alsoFeature !== "female" && alsoFeature !== "unisex") {
+                if (globalVariables.filterFeatures[alsoFeature] && globalVariables.markers[eachMarker].features[alsoFeature]){
                   filterShowBool = true;
                 }
                 else {
@@ -585,15 +585,15 @@ var ViewModel = function() {
       });
       globalVariables.markers.push(newMarker);
       self.markersForViewArray.removeAll();
-      for (var marker = 0; marker < globalVariables.markers.length; marker++) {
-        self.markersForViewArray.push(globalVariables.markers[marker]);
+      for (var alsoMarker = 0; alsoMarker < globalVariables.markers.length; alsoMarker++) {
+        self.markersForViewArray.push(globalVariables.markers[alsoMarker]);
 
       }
       //set up marker's to open infowindow on click
       newMarker.addListener('click', addMarkerOnClick());
     }
     setMarkers();
-  }
+  };
 
   //this is called when you click "Add Bathroom" in the right click menu.
   self.addBathroom = function() {
