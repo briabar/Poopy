@@ -334,9 +334,10 @@ function setMarkers() {
   //set markers
   for (var eachMarker = 0; eachMarker < globalVariables.markers.length; eachMarker++) {
     var filterShowBool = false;
-    if ((globalVariables.filterFeatures.male && globalVariables.markers[eachMarker].features.male) ||
+    var hasGenderMatch = (globalVariables.filterFeatures.male && globalVariables.markers[eachMarker].features.male) ||
         (globalVariables.filterFeatures.female && globalVariables.markers[eachMarker].features.female) ||
-        (globalVariables.filterFeatures.unisex && globalVariables.markers[eachMarker].features.unisex)) {
+        (globalVariables.filterFeatures.unisex && globalVariables.markers[eachMarker].features.unisex);
+    if (hasGenderMatch) {
           filterShowBool = true;
       for (var feature in globalVariables.markers[eachMarker].features){
         if (globalVariables.markers[eachMarker].features.hasOwnProperty(feature)){
@@ -352,11 +353,30 @@ function setMarkers() {
         }
       }
     }
+    if (!globalVariables.filterFeatures.male &&
+        !globalVariables.filterFeatures.female &&
+        !globalVariables.filterFeatures.unisex) {
+          for (var feature in globalVariables.markers[eachMarker].features){
+            if (globalVariables.markers[eachMarker].features.hasOwnProperty(feature)){
+              if (globalVariables.filterFeatures[feature] && feature !== "male" && feature !== "female" && feature !== "unisex") {
+                if (globalVariables.filterFeatures[feature] && globalVariables.markers[eachMarker].features[feature]){
+                  filterShowBool = true;
+                }
+                else {
+                  filterShowBool = false;
+                  break;
+                }
+              }
+            }
+          }
+        }
+
     if (globalVariables.filterFeatures.showAll) {
       filterShowBool = true;
     }
-    if (filterShowBool) {
+    if (filterShowBool || fromListBoxShow) {
       globalVariables.markers[eachMarker].setMap(globalVariables.map);
+      fromListBoxShow = false;
     }
   }
   return globalVariables.markers;
@@ -614,8 +634,13 @@ var ViewModel = function() {
   self.selectMarker = function(currentMarker) {
       for(var marker = 0; marker < globalVariables.markers.length; marker ++) {
         globalVariables.markers[marker].setAnimation(null);
+        globalVariables.markers[marker].setMap(null);
       }
+      setMarkers();
+      currentMarker.setMap(globalVariables.map);
       currentMarker.setAnimation(google.maps.Animation.BOUNCE);
+      // fromListBoxShow = true;
+      // setMarkers();
       populateInfoWindow(currentMarker, globalVariables.infoWindow);
     };
   };
