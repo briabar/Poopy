@@ -11,28 +11,34 @@
 </head>
 <body>
   <main>
-    <aside class="container" data-bind="event: {mouseover: showMenu}">
+    <aside class="container" data-bind="event: {mouseover: showMenu, mouseout: hideMenu}">
     <div class="filter-img"></div>
-    <div class="options-box" data-bind="event: {mouseout: hideMenu}">
-        <div class="inputbtncont"></div>
-        <label for="male" class="inputbtncont">Male<input id="male" class="inputbtn" type="checkbox" data-bind=" checked: filterMale, click: changeFilter"></label>
-        <label for="female" class="inputbtncont">Female<input id="female" class="inputbtn" type="checkbox" data-bind="checked: filterFemale, click: changeFilter"></label>
-        <label for="unisex" class="inputbtncont">Unisex<input id="unisex" class="inputbtn" type="checkbox" data-bind="checked: filterUnisex, click: changeFilter"></label>
-        <label for="free" class="inputbtncont">Free<input id="free" class="inputbtn" type="checkbox" data-bind="checked: filterFree, click: changeFilter"></label>
-        <label for="free" class="inputbtncont">No Purchase Required<input id="purchase" class="inputbtn" type="checkbox" data-bind="checked: filterPurchase, click: changeFilter"></label>
-        <label for="changing" class="inputbtncont">Changing Station<input id="changing" class="inputbtn" type="checkbox" data-bind="checked: filterChangingStation, click: changeFilter"></label>
-        <label for="handy" class="inputbtncont">Handycap<input id="handy" class="inputbtn" type="checkbox" data-bind="checked: filterHandycap, click: changeFilter"></label>
-        <label for="pub" class="inputbtncont">Public Restroom<input id="pub" class="inputbtn" type="checkbox" data-bind="checked: filterPublicRestRoom, click: changeFilter"></label>
-        <label for="show" class="inputbtncont">Show All<input id="show" class="inputbtn" type="checkbox" data-bind="checked: filterShowAll, click: changeFilter"></label>
+    <div class="padding"></div>
+    <div class="options-box">
+      <label for="male" class="inputbtncont">Male<input id="male" class="inputbtn" type="checkbox" data-bind=" checked: filterMale, click: changeFilter"></label>
+      <label for="female" class="inputbtncont">Female<input id="female" class="inputbtn" type="checkbox" data-bind="checked: filterFemale, click: changeFilter"></label>
+      <label for="unisex" class="inputbtncont">Unisex<input id="unisex" class="inputbtn" type="checkbox" data-bind="checked: filterUnisex, click: changeFilter"></label>
+      <label for="free" class="inputbtncont">Free<input id="free" class="inputbtn" type="checkbox" data-bind="checked: filterFree, click: changeFilter"></label>
+      <label for="free" class="inputbtncont">No Purchase Required<input id="purchase" class="inputbtn" type="checkbox" data-bind="checked: filterPurchase, click: changeFilter"></label>
+      <label for="changing" class="inputbtncont">Changing Station<input id="changing" class="inputbtn" type="checkbox" data-bind="checked: filterChangingStation, click: changeFilter"></label>
+      <label for="handy" class="inputbtncont">Handycap<input id="handy" class="inputbtn" type="checkbox" data-bind="checked: filterHandycap, click: changeFilter"></label>
+      <label for="pub" class="inputbtncont">Public Restroom<input id="pub" class="inputbtn" type="checkbox" data-bind="checked: filterPublicRestRoom, click: changeFilter"></label>
+      <label for="show" class="inputbtncont">Show All<input id="show" class="inputbtn" type="checkbox" data-bind="checked: filterShowAll, click: changeFilter"></label>
     </div>
   </aside>
     <div data-bind="event: {mouseover: mapBind}, mouseout: disable" id="map"></div>
+  <aside class="location-list" data-bind="event: {mouseover: showMenu, mouseout: hideMenu}">
+    <div class="link-padding"></div>
+    <div class="link-box" data-bind="foreach: markersForViewArray">
+    <a href="#" class="marker-link" data-bind="text: title, click: $parent.selectMarker"></a>
+  </div>
+  </aside>
   </main>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="js/lib/knockout-3.2.0.js"></script>
+    <script src="js/app.js"></script>
     <script async defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpAq4OVsoOqzt_9igfES5XiJX6moInlso&v=3&callback=initMap">
     </script>
-    <script src="js/lib/knockout-3.2.0.js"></script>
-    <script src="js/app.js"></script>
 </body>
 </html>

@@ -18,26 +18,15 @@ main {
 }
 .inputbtncont {
   display: block;
-  height: 5px;
-  padding-left: 15px;
-  text-indent: -15px;
   flex-grow: 1;
 }
 .inputbtn {
-  /* height: 30px;
-  width: 30px; */
-  padding: 0;
-  margin:0;
   vertical-align: bottom;
-  position: relative;
-  /* top: -1px; */
-  /* padding-left: 5px; */
 }
-.container {
+.container{
   display: flex;
   height: 150px;
   width: 25px;
-  /* overflow: hidden; */
   position: fixed;
   background-color: rgba(0,0,0,0.9);
   z-index: 1000;
@@ -45,30 +34,76 @@ main {
   transition: width 2s, background-color 3s;
 }
 .container:hover {
-  width: 80%;
+  width: 100%;
   background-color: rgba(130,130,130,130);
 }
-
+.container:hover > .options-box {
+  opacity: 1;
+}
 .options-box {
   display: flex;
   flex-wrap: wrap;
+  margin-left: 10px;
+  overflow: hidden;
   width: 100%;
-  font-size: 1.3em;
   height: 100%;
   opacity: 0;
   -webkit-transition: opacity 1s; /* Safari */
   transition: opacity 1s;
   transition-delay: 2s;
 }
-.options-box:hover {
-  opacity: 1;
-}
-.hide {
-  visibility: hidden;
-}
 .filter-img {
   position: absolute;
   background-image:url("img/filter.jpg");
   height: 100%;
   width: 25px;
+  opacity: 1;
+}
+.location-list {
+  display: inline-block;
+  background-color: rgba(0,0,0,0.9);
+  width: 50px;
+  z-index: 9000;
+  overflow: hidden;
+  height: 50px;
+  position: fixed;
+  bottom: 0;
+  margin-bottom: 5px;
+  -webkit-transition: width 2s, height 2s, background-color 3s; /* Safari */
+  transition: width 2s, height 2s, background-color 3s;
+}
+.location-list:hover {
+  background-color: rgba(130,130,130,130);
+  width: 100%;
+  height: 200px;
+}
+.link-box {
+  opacity: 0;
+  -webkit-transition: opacity 1s; /* Safari */
+  transition: opacity 1s;
+  transition-delay: 2s;
+}
+.link-box:hover {
+  opacity: 1;
+}
+.location-list:hover > .link-box {
+  opacity: 1;
+}
+.marker-link {
+    color: white;
+    margin: 5px;
+    padding: 5px;
+}
+.padding {
+  height: 150px;
+  width: 25px;
+  float: left;
+  visibility: hidden;
+}
+.link-padding {
+  height: 50px;
+  width: 50px;
+  float: left;
+  background-image:url("img/poop.png");
+  background-size: cover;
 }

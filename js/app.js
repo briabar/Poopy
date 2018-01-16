@@ -27,6 +27,9 @@ var globalVariables = { //this object holds all our globals to help keep our foo
   bathrooms: {},
 };
 
+window.onerror = function(e) {
+  alert("Something went wrong..." + e);
+}
 
 function initMap() {
 // Constructor creates a new map
@@ -38,7 +41,7 @@ function initMap() {
   globalVariables.infoWindow = new google.maps.InfoWindow({
     position: globalVariables.map.getCenter(),
   });
-  showMarkers(globalVariables.bathrooms, globalVariables.filterFeatures);
+  showMarkers();
   globalVariables.infoWindow.setContent("Right click on a location to create new bathrooms, or hover over the filter tab on the left.");
   globalVariables.infoWindow.open(globalVariables.map);
 } //END OF initMap()
@@ -280,11 +283,12 @@ function populateInfoWindow(marker, infowindow) {
         //make pretty stars
         if (yelpRating !== undefined) {
           var ratingNumber = 0;
+          yelpRating = Math.round(yelpRating);
           for (ratingNumber; ratingNumber < yelpRating; ratingNumber++){
             yelpStars += '★';
           }
           console.log(yelpRating);
-          for (ratingNumber = 1; ratingNumber < (5-yelpRating); ratingNumber++) {
+          for (ratingNumber = 0; ratingNumber < (5-yelpRating); ratingNumber++) {
             yelpStars += '☆';
           }
         }
@@ -323,35 +327,10 @@ function addMarkerOnClick(){
 }
 
 
-//function take in an array of bathrooms, an array of filter features, and
-//then sets markers onto map.  Only markers that pass the filter will be set.
-function showMarkers(bathroomsArray) {
-  for (var marker = 0; marker < globalVariables.markers.length; marker++) {
-    globalVariables.markers[marker].setMap(null);
-  }
-  globalVariables.markers = [];
-  for(var place = 0; place < globalVariables.bathrooms.length; place++) {
-    var current = globalVariables.bathrooms[place];
-    var position = current.location;
-    var title = current.title;
-    var features = current.features;
-    var rating = current.rating;
-    var comments = current.comments;
-    var icon = globalVariables.icons[current.type].icon;
-    var newMarker = new google.maps.Marker({
-      position: position,
-      title: title,
-      features: features,
-      rating: rating,
-      animation: google.maps.Animation.DROP,
-      id: place,
-      comments: comments,
-      icon: icon,
-    });
-    globalVariables.markers.push(newMarker);
-    //set up marker's to open infowindow on click
-    newMarker.addListener('click', addMarkerOnClick());
-  }
+//function uses array of globalVariables.bathrooms, an array of
+//globalVariables.filterFeatures, and then sets markers onto map.
+//Only markers that pass the filter will be set.
+function setMarkers() {
   //set markers
   for (var eachMarker = 0; eachMarker < globalVariables.markers.length; eachMarker++) {
     var filterShowBool = false;
@@ -380,21 +359,25 @@ function showMarkers(bathroomsArray) {
       globalVariables.markers[eachMarker].setMap(globalVariables.map);
     }
   }
+  return globalVariables.markers;
 }
 
 
 //this is the viewmodel
 var ViewModel = function() {
   var $optionsBox = $('.options-box');
+  var $linkBox = $('.link-box');
   var arrayToClear = [];
   var self = this;
-
 
   //this helps hide our slide out filter
   self.hideMenu = function() {
     $optionsBox.css('-webkit-transition','opacity .3s');
     $optionsBox.css('transition','opacity .3s');
     $optionsBox.css('transition-delay','0s');
+    $linkBox.css('-webkit-transition','opacity .3s');
+    $linkBox.css('transition','opacity .3s');
+    $linkBox.css('transition-delay','0s');
   };
 
 
@@ -403,6 +386,9 @@ var ViewModel = function() {
     $optionsBox.css('-webkit-transition','opacity 1s');
     $optionsBox.css('transition','opacity 1s');
     $optionsBox.css('transition-delay','2s');
+    $linkBox.css('-webkit-transition','opacity 1s');
+    $linkBox.css('transition','opacity 1s');
+    $linkBox.css('transition-delay','2s');
   };
 
 
@@ -531,7 +517,7 @@ var ViewModel = function() {
       unisex: self.filterUnisex(),
       showAll: self.filterShowAll()
     };
-    showMarkers(globalVariables.bathrooms);
+    self.markersView = ko.observableArray(showMarkers(self.markersView));
     return true;
   };
 
@@ -553,6 +539,41 @@ var ViewModel = function() {
   }
   initBathroomObservables();
 
+
+  showMarkers = function() {
+    for (var marker = 0; marker < globalVariables.markers.length; marker++) {
+      globalVariables.markers[marker].setMap(null);
+    }
+    globalVariables.markers = [];
+    for(var place = 0; place < globalVariables.bathrooms.length; place++) {
+      var current = globalVariables.bathrooms[place];
+      var position = current.location;
+      var title = current.title;
+      var features = current.features;
+      var rating = current.rating;
+      var comments = current.comments;
+      var icon = globalVariables.icons[current.type].icon;
+      var newMarker = new google.maps.Marker({
+        position: position,
+        title: title,
+        features: features,
+        rating: rating,
+        animation: google.maps.Animation.DROP,
+        id: place,
+        comments: comments,
+        icon: icon,
+      });
+      globalVariables.markers.push(newMarker);
+      self.markersForViewArray.removeAll();
+      for (var marker = 0; marker < globalVariables.markers.length; marker++) {
+        self.markersForViewArray.push(globalVariables.markers[marker]);
+
+      }
+      //set up marker's to open infowindow on click
+      newMarker.addListener('click', addMarkerOnClick());
+    }
+    setMarkers();
+  }
 
   //this is called when you click "Add Bathroom" in the right click menu.
   self.addBathroom = function() {
@@ -578,9 +599,25 @@ var ViewModel = function() {
          publicRestRoom: self.newPublic()},
         rating: self.newRating(), type: newType, comments: [self.newComment()]});
         globalVariables.infoWindow.close();
-        showMarkers(globalVariables.bathrooms, globalVariables.filterFeatures);
+        showMarkers();
     }
      initBathroomObservables(); //reset observables
+  };
+
+  self.markersForViewArray = ko.observableArray();
+  window.onload = function() {
+    self.markersForViewArray.removeAll();
+    for (var marker = 0; marker < globalVariables.markers.length; marker++) {
+      self.markersForViewArray.push(globalVariables.markers[marker]);
+
+    }
+  self.selectMarker = function(currentMarker) {
+      for(var marker = 0; marker < globalVariables.markers.length; marker ++) {
+        globalVariables.markers[marker].setAnimation(null);
+      }
+      currentMarker.setAnimation(google.maps.Animation.BOUNCE);
+      populateInfoWindow(currentMarker, globalVariables.infoWindow);
+    };
   };
 };
 ko.applyBindings(new ViewModel());

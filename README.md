@@ -15,7 +15,7 @@ This server acts as a middleman for doing yelp API calls.
 After that open index.html in a browser of your choosing.
 Note: in Edge there seems to be an issue with CORS.  It seems Microsoft has
 their own standard for handling CORS, and I have not been able to implement it
-yet.  
+yet.
 ## Dendencies and Runtime Environment
 The server must be run in python 2, and you must have the following modules installed:
 Flask, install with "pip install flask"
