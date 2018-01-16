@@ -18,11 +18,13 @@ their own standard for handling CORS, and I have not been able to implement it
 yet.
 ## Dendencies and Runtime Environment
 The server must be run in python 2, and you must have the following modules installed:
-Flask, install with "pip install flask"
-Flask CORS, install with "pip install flask_cors"
-requests, install with "pip install requests"
+Flask
+Flask CORS
+requests
+
+Install using: "pip install -r requirements.txt"
 ##To Run
-Use command "python server.py"
+Use command "python server.py" and open index.html.
 
 Features
 ------------------
@@ -32,6 +34,12 @@ Features
 By hovering over the filter tab to the right of the screen you can open a menu
 of filtering options.  These options allow you to filter by gender, and various
 pay options and features such as changing station or handy cap accessible.
+
+### Select Marker By List
+
+By hovering over the poop in the bottom left you will get access to a list of
+markers.  This list will update as new markers are added, and will zoom to and
+open infobox of selected marker. 
 
 ### Marker On-click Information
 
