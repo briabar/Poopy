@@ -27,8 +27,8 @@ var globalVariables = { //this object holds all our globals to help keep our foo
   bathrooms: {},
 };
 
-window.onerror = function(e) {
-  alert("Something went wrong..." + e);
+googleError = function() {
+  alert("Something went wrong... Google maps failed to load. Please try again later.");
 };
 
 function initMap() {
